@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entity Detail: Fragma IoT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Mobile brand header -->
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <span class="navbar__logo-dot"></span>
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <span class="navbar__logo-dot"></span>
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav" style="flex: 1;">
+                <a href="/view/index.html" class="sidebar__link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    View
+                </a>
+                <a href="/dashboard/index.html" class="sidebar__link sidebar__link--active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    Entity
+                </a>
+                <a href="/simulation/index.html" class="sidebar__link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                    Simulation
+                </a>
+            </nav>
+            <nav class="sidebar__nav" style="padding-bottom: 24px;">
+                <a href="/docs/api.md" class="sidebar__link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                    API Docs
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                    <a href="/dashboard/index.html" class="btn btn--ghost btn--sm">&larr; Back to Dashboard</a>
+                    <a href="/view/index.html" class="btn btn--ghost btn--sm">Open Global View</a>
+                </div>
+
+                <section class="card" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h1 id="entityTitle" class="page-header__title" style="margin-bottom: 4px;">Loading Entity...</h1>
+                            <div id="entityCreatedDate" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;"></div>
+                            <div id="entityFieldsContainer" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 0.8rem; color: var(--text-secondary);">Detected Fields:</span>
+                                <span id="entityFieldsList" style="display: inline-flex; flex-wrap: wrap; gap: 6px;"></span>
+                                <button type="button" id="redetectFieldsBtn" class="btn btn--ghost btn--sm" style="display: none; padding: 2px 10px; font-size: 0.75rem; height: 30px; min-height: 30px;">Re-detect Fields</button>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-control); padding: 12px 16px; min-width: 260px;">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Device API Key (Token)</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                <span id="entityApiKeyDisplay" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent);">frag_...</span>
+                                <button type="button" id="copyApiKeyBtn" class="btn btn--ghost btn--sm">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dedicated Field Detection Onboarding Card -->
+                <section id="fieldDetectionCard" class="card" style="display: none; margin-bottom: 32px; border-color: rgba(243, 156, 18, 0.4); background: rgba(243, 156, 18, 0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--warning);"></span>
+                                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">Field Detection Required</h2>
+                                <span class="badge" style="background: rgba(243, 156, 18, 0.15); color: var(--warning); border-color: rgba(243, 156, 18, 0.3);">Awaiting First POST</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 740px; line-height: 1.5;">
+                                To register telemetry and configure fields, send your first HTTP POST request to this entity's unique endpoint. Fragma will automatically inspect the JSON keys and configure the schema.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid--2" style="gap: 16px; margin-bottom: 20px;">
+                        <div style="background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-control); padding: 14px 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; font-weight: 600;">Specific API Endpoint</span>
+                                <button type="button" id="copyEndpointBtn" class="btn btn--ghost btn--sm" style="height: 30px; min-height: 30px; padding: 0 10px; font-size: 0.75rem;">Copy URL</button>
+                            </div>
+                            <div id="detectEndpointDisplay" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); word-break: break-all;"></div>
+                        </div>
+
+                        <div style="background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-control); padding: 14px 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; font-weight: 600;">Entity Token (X-API-Key Header)</span>
+                                <button type="button" id="copyTokenBtn" class="btn btn--ghost btn--sm" style="height: 30px; min-height: 30px; padding: 0 10px; font-size: 0.75rem;">Copy Token</button>
+                            </div>
+                            <div id="detectTokenDisplay" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-primary); word-break: break-all;"></div>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-control); padding: 16px;">
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">In-Browser Test Sender</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Test this entity's endpoint directly to detect fields without leaving the page.</div>
+                        </div>
+                        <form id="inlineTesterForm">
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <textarea id="testerPayloadInput" class="form-input" style="font-family: var(--font-mono); font-size: 0.85rem; height: 90px; resize: vertical;" spellcheck="false" required>{\n  "temperature": 25.4,\n  "humidity": 62.0\n}</textarea>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                                <div id="testerStatusFeedback" style="font-size: 0.85rem; color: var(--text-secondary);"></div>
+                                <button type="submit" id="testerSubmitBtn" class="btn btn--primary btn--sm">Send Test Payload</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="card" style="margin-bottom: 40px;">
+                    <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 16px;">How to Connect Your Device</h2>
+                    <div class="grid grid--2">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">cURL / HTTP Test</span>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <select id="curlPlatformSelect" class="form-select" style="padding: 2px 8px; font-size: 0.75rem; height: 30px; min-height: 30px; width: auto;">
+                                        <option value="cmd">Windows CMD</option>
+                                        <option value="bash">Linux / macOS (Bash)</option>
+                                        <option value="ps">PowerShell</option>
+                                    </select>
+                                    <button type="button" id="copyCurlBtn" class="btn btn--ghost btn--sm" style="height: 30px; min-height: 30px; padding: 0 10px; font-size: 0.75rem;">Copy</button>
+                                </div>
+                            </div>
+                            <pre id="curlSnippetCode" class="code-block" style="white-space: pre-wrap; font-size: 0.8rem; overflow-x: auto;"></pre>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">ESP32 (Arduino C++)</span>
+                                <button type="button" id="copyEspBtn" class="btn btn--ghost btn--sm">Copy</button>
+                            </div>
+                            <pre id="esp32SnippetCode" class="code-block" style="white-space: pre-wrap; font-size: 0.75rem; max-height: 220px; overflow-y: auto;"></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section style="margin-bottom: 40px;">
+                    <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 16px;">Recent Telemetry Stream</h2>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 220px;">Recorded Time</th>
+                                    <th style="width: 140px;">Age</th>
+                                    <th>Data Payload</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody"></tbody>
+                        </table>
+                        <div id="dataTableEmpty" style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                            No telemetry points received yet. Start sending HTTP POST requests from your device.
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card" style="border-color: rgba(231, 76, 111, 0.2); background: rgba(231, 76, 111, 0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h3 style="font-size: 1rem; font-weight: 700; color: var(--danger); margin-bottom: 4px;">Danger Zone</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary);">Permanently remove this entity and all historical data points.</p>
+                        </div>
+                        <button type="button" id="openDeleteModalBtn" class="btn btn--danger">Delete Entity</button>
+                    </div>
+                </section>
+            </div>
+
+            <footer class="footer" style="margin-top: auto; border-top: none;">
+                <div>Fragma IoT Dashboard &bull; Public, lightweight, and framework-free</div>
+            </footer>
+        </main>
+    </div>
+
+    <div id="deleteEntityModal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal__header">
+                <h2 class="modal__title" style="color: var(--danger);">Confirm Entity Deletion</h2>
+                <button type="button" id="closeDeleteModalBtn" class="modal__close">&times;</button>
+            </div>
+            <form id="deleteEntityForm">
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+                    This action cannot be undone. Enter the entity's API key to verify ownership and confirm deletion.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="deleteApiKeyInput">Entity API Key</label>
+                    <input type="text" id="deleteApiKeyInput" class="form-input" placeholder="frag_..." required autocomplete="off">
+                </div>
+                <div class="modal__footer">
+                    <button type="button" id="cancelDeleteModalBtn" class="btn btn--ghost">Cancel</button>
+                    <button type="submit" id="submitDeleteBtn" class="btn btn--danger">Confirm Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/utils.js?v=3"></script>
+    <script src="/js/api.js?v=3"></script>
+    <script src="/js/entity.js?v=3"></script>
+</body>
+</html>

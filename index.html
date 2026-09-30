@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma — Public IoT Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .hero {
+            padding: 80px 0 60px 0;
+            text-align: center;
+        }
+        .hero__title {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        .hero__title span {
+            color: var(--accent);
+        }
+        .hero__subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 36px auto;
+        }
+        .step-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-card);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .step-card__title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .step-card__text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar__brand">
+            <span class="navbar__logo-dot"></span>
+            <span>Fragma</span>
+        </a>
+        <div class="navbar__links">
+            <a href="/dashboard/index.html" class="navbar__link">Dashboard</a>
+            <a href="/docs/api.md" class="navbar__link">API Docs</a>
+            <a href="/dashboard/index.html" class="btn btn--primary btn--sm">Launch App</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1 class="hero__title">Connect IoT devices.<br>Visualize data in <span>seconds</span>.</h1>
+            <p class="hero__subtitle">
+                Create data entities, push sensor readings via REST API with simple API keys, and build custom live charts and metric cards without complex setup.
+            </p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a href="/dashboard/index.html" class="btn btn--primary" style="padding: 0 32px; font-size: 1.05rem; min-height: 52px;">Go to Dashboard</a>
+                <a href="/docs/api.md" class="btn btn--ghost" style="padding: 0 32px; font-size: 1.05rem; min-height: 52px;">View API Docs</a>
+            </div>
+        </section>
+
+        <section style="margin-top: 60px; margin-bottom: 80px;">
+            <div style="margin-bottom: 32px;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px;">How Fragma Works</h2>
+            </div>
+            <div class="grid grid--3">
+                <div class="step-card">
+                    <div class="step-card__title">Create Entity</div>
+                    <div class="step-card__text">Define your device entity and the fields it emits (e.g. temperature, humidity, voltage). You instantly receive a secure device API key.</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-card__title">Connect Device</div>
+                    <div class="step-card__text">POST JSON telemetry directly from ESP32, Arduino, Raspberry Pi, Python scripts, or curl requests with a single HTTP header.</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-card__title">Visualize Telemetry</div>
+                    <div class="step-card__text">Add Line Charts and Value Cards to your entity dashboard. Live polling updates your sensor readings seamlessly in real-time.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div>Fragma IoT Dashboard &bull; Public, lightweight, and framework-free</div>
+    </footer>
+</body>
+</html>

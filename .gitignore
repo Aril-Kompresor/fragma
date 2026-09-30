@@ -1,0 +1,17 @@
+# Operating System
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment and Secrets
+.env
+*.local
+
+# IDE and Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log

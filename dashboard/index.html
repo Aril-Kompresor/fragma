@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard: Fragma IoT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Mobile brand header -->
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <span class="navbar__logo-dot"></span>
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <span class="navbar__logo-dot"></span>
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav" style="flex: 1;">
+                <a href="/view/index.html" class="sidebar__link" id="navView">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    View
+                </a>
+                <a href="/dashboard/index.html" class="sidebar__link sidebar__link--active" id="navEntity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    Entity
+                </a>
+                <a href="/simulation/index.html" class="sidebar__link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                    Simulation
+                </a>
+            </nav>
+            <nav class="sidebar__nav" style="padding-bottom: 24px;">
+                <a href="/docs/api.md" class="sidebar__link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                    API Docs
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+            <div class="container">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">IoT Entities</h1>
+                        <p class="page-header__subtitle">Manage your device data sources and open dashboards</p>
+                    </div>
+                    <div>
+                        <button id="openCreateModalBtn" class="btn btn--primary">+ Create Entity</button>
+                    </div>
+                </div>
+
+                <div id="entitiesLoading" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    Loading entities...
+                </div>
+
+                <div id="entitiesGrid" class="grid grid--3"></div>
+            </div>
+            
+            <footer class="footer" style="margin-top: auto; border-top: none;">
+                <div>Fragma IoT Dashboard &bull; Public, lightweight, and framework-free</div>
+            </footer>
+        </main>
+    </div>
+
+    <div id="createModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
+        <div class="modal" style="max-width: 560px;">
+            <div class="modal__header">
+                <h2 class="modal__title" id="createModalTitle">Create New Entity</h2>
+                <button type="button" id="closeCreateModalBtn" class="modal__close" aria-label="Close dialog">&times;</button>
+            </div>
+            <form id="createEntityForm" novalidate>
+                <div id="formValidationSummary" class="form-summary form-summary--hidden" role="alert" aria-live="assertive" tabindex="-1"></div>
+
+                <div class="form-group">
+                    <label class="form-label" for="entityNameInput">
+                        Entity Name <span class="form-required" aria-hidden="true">*</span>
+                    </label>
+                    <input type="text" id="entityNameInput" class="form-input" placeholder="e.g. Living Room DHT22 Sensor" aria-required="true" aria-invalid="false" aria-describedby="entityNameHelp entityNameError" autocomplete="off">
+                    <div id="entityNameHelp" class="form-help">3 to 50 characters. Letters, numbers, spaces, hyphens, and underscores only.</div>
+                    <div id="entityNameError" class="form-error" role="alert" aria-live="polite"></div>
+                </div>
+
+                <div class="grid grid--2" style="gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="entityPlatformSelect">
+                            Hardware Platform <span class="form-required" aria-hidden="true">*</span>
+                        </label>
+                        <select id="entityPlatformSelect" class="form-select" aria-required="true" aria-invalid="false" aria-describedby="entityPlatformHelp entityPlatformError">
+                            <option value="">-- Choose Platform --</option>
+                            <option value="esp32">ESP32 (Wi-Fi + BLE)</option>
+                            <option value="esp8266">ESP8266 (NodeMCU)</option>
+                            <option value="arduino">Arduino (Ethernet/WiFi)</option>
+                            <option value="raspberry_pi">Raspberry Pi (Python/Node)</option>
+                            <option value="custom">Custom Webhook / Device</option>
+                        </select>
+                        <div id="entityPlatformHelp" class="form-help">Target device architecture.</div>
+                        <div id="entityPlatformError" class="form-error" role="alert" aria-live="polite"></div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="entityIntervalInput">
+                            Report Interval (s) <span class="form-required" aria-hidden="true">*</span>
+                        </label>
+                        <input type="number" id="entityIntervalInput" class="form-input" value="30" min="5" max="3600" step="1" aria-required="true" aria-invalid="false" aria-describedby="entityIntervalHelp entityIntervalError">
+                        <div id="entityIntervalHelp" class="form-help">5 to 3600 seconds.</div>
+                        <div id="entityIntervalError" class="form-error" role="alert" aria-live="polite"></div>
+                    </div>
+                </div>
+
+                <fieldset class="form-fieldset">
+                    <legend class="form-legend">Initial Telemetry Field (Optional)</legend>
+                    <div class="grid grid--2" style="gap: 12px; margin-top: 8px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="initialFieldNameInput">Field Key</label>
+                            <input type="text" id="initialFieldNameInput" class="form-input" placeholder="e.g. temperature" aria-invalid="false" aria-describedby="initialFieldNameHelp initialFieldNameError" autocomplete="off">
+                            <div id="initialFieldNameHelp" class="form-help">Lowercase letters, numbers, and underscores.</div>
+                            <div id="initialFieldNameError" class="form-error" role="alert" aria-live="polite"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="initialFieldUnitInput">Unit Symbol</label>
+                            <input type="text" id="initialFieldUnitInput" class="form-input" placeholder="e.g. °C, %, ppm" maxlength="10" aria-invalid="false" aria-describedby="initialFieldUnitHelp initialFieldUnitError">
+                            <div id="initialFieldUnitHelp" class="form-help">Measurement unit (max 10 chars).</div>
+                            <div id="initialFieldUnitError" class="form-error" role="alert" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label class="form-label" for="entityNotesInput">Location Notes (Optional)</label>
+                        <span id="entityNotesCounter" class="form-counter" aria-live="polite">0 / 150</span>
+                    </div>
+                    <textarea id="entityNotesInput" class="form-input form-textarea" rows="2" maxlength="150" placeholder="e.g. Living room shelf near window" aria-invalid="false" aria-describedby="entityNotesHelp entityNotesError"></textarea>
+                    <div id="entityNotesHelp" class="form-help">Physical device location or notes (max 150 characters).</div>
+                    <div id="entityNotesError" class="form-error" role="alert" aria-live="polite"></div>
+                </div>
+
+                <div class="modal__footer">
+                    <button type="button" id="cancelCreateModalBtn" class="btn btn--ghost">Cancel</button>
+                    <button type="submit" id="submitCreateBtn" class="btn btn--primary">
+                        <span id="submitCreateBtnText">Create Entity</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="keySuccessModal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal__header">
+                <h2 class="modal__title" style="color: var(--accent);">Entity Created!</h2>
+                <button type="button" id="closeSuccessModalBtn" class="modal__close">&times;</button>
+            </div>
+            <div>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 16px;">
+                    Your device API key has been generated. Copy and save it now: it is required in the <code style="color: var(--accent);">X-API-Key</code> header to push data and manage this entity.
+                </p>
+                <div class="form-label">API Key</div>
+                <div class="code-block" style="margin-bottom: 20px;">
+                    <span id="newApiKeyDisplay">frag_...</span>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" id="copyNewKeyBtn" class="btn btn--ghost">Copy Key</button>
+                    <button type="button" id="goToNewEntityBtn" class="btn btn--primary">Go to Entity Detail</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/utils.js?v=2"></script>
+    <script src="/js/api.js?v=2"></script>
+    <script src="/js/app.js?v=2"></script>
+</body>
+</html>
