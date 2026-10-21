@@ -5,3 +5,5 @@
         Header set Expires 0
     </FilesMatch>
 </IfModule>
+
+ErrorDocument 404 /404.html

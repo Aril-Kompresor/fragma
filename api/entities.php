@@ -40,13 +40,26 @@ function handle_get(PDO $pdo): void
         $entity['data_count'] = (int) ($stats['total'] ?? 0);
         $entity['last_data_at'] = $stats['last_point'] ?? null;
 
+        $latestStmt = $pdo->prepare('SELECT payload FROM data_points WHERE entity_id = :entity_id ORDER BY recorded_at DESC, id DESC LIMIT 1');
+        $latestStmt->execute([':entity_id' => $id]);
+        $latestRow = $latestStmt->fetch();
+        $latestPayload = $latestRow && !empty($latestRow['payload']) ? json_decode((string) $latestRow['payload'], true) : null;
+        $entity['latest_payload'] = is_array($latestPayload) ? $latestPayload : null;
+
         json_response(200, ['success' => true, 'data' => $entity]);
     }
 
     $stmt = $pdo->query('
         SELECT e.id, e.name, e.api_key, e.fields, e.created_at, e.updated_at,
                COUNT(d.id) AS data_count,
-               MAX(d.recorded_at) AS last_data_at
+               MAX(d.recorded_at) AS last_data_at,
+               (
+                   SELECT d2.payload
+                   FROM data_points d2
+                   WHERE d2.entity_id = e.id
+                   ORDER BY d2.recorded_at DESC, d2.id DESC
+                   LIMIT 1
+               ) AS latest_payload
         FROM entities e
         LEFT JOIN data_points d ON d.entity_id = e.id
         GROUP BY e.id
@@ -62,6 +75,8 @@ function handle_get(PDO $pdo): void
         $row['api_key_masked'] = mask_api_key((string) $row['api_key']);
         unset($row['api_key']);
         $row['data_count'] = (int) $row['data_count'];
+        $latestPayload = !empty($row['latest_payload']) ? json_decode((string) $row['latest_payload'], true) : null;
+        $row['latest_payload'] = is_array($latestPayload) ? $latestPayload : null;
         $result[] = $row;
     }
 

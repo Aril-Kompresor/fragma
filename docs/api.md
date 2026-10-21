@@ -234,3 +234,148 @@ void loop() {
   delay(10000);
 }
 ```
+
+---
+
+## 6. PTS Release Candidate: REST API Integration & UI State Management
+
+FRAGMA mengintegrasikan antarmuka telemetri multi-cluster berbasis **Fetch API**, **JSON**, dan **async/await** untuk evaluasi rilis kandidat PTS. Antarmuka ini menghubungkan platform dengan dua sumber REST API dan mendemonstrasikan penanganan siklus hidup data asinkron secara utuh (*loading, success, empty, dan error state*).
+
+### 6.1. Stasiun Cuaca Ambien Publik (Open-Meteo Live API)
+
+Digunakan untuk sinkronisasi telemetri iklim luar guna mengukur efisiensi *heat exchange* dan beban pendingin HVAC rak server internal.
+
+- **Method**: `GET`
+- **Endpoint**: `https://api.open-meteo.com/v1/forecast`
+- **Autentikasi**: Tidak diperlukan (Publik / Standar WMO)
+- **Parameter Query**:
+  - `latitude`: Koordinat lintang stasiun cuaca terdekat (contoh: `-6.2088` Jakarta).
+  - `longitude`: Koordinat bujur geografis (contoh: `106.8456`).
+  - `current`: CSV daftar metrik telemetri yang diminta (`temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,weather_code`).
+  - `timezone`: Zona waktu ISO/IANA (contoh: `Asia/Jakarta`).
+
+#### Sintaks cURL:
+```bash
+curl -s "https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,weather_code&timezone=Asia%2FJakarta"
+```
+
+#### Contoh Respon (`200 OK`):
+```json
+{
+  "latitude": -6.221441,
+  "longitude": 106.856186,
+  "timezone": "Asia/Jakarta",
+  "elevation": 12.0,
+  "current_units": {
+    "temperature_2m": "°C",
+    "relative_humidity_2m": "%",
+    "surface_pressure": "hPa",
+    "wind_speed_10m": "km/h"
+  },
+  "current": {
+    "temperature_2m": 31.2,
+    "relative_humidity_2m": 58,
+    "surface_pressure": 1014.5,
+    "wind_speed_10m": 1.2,
+    "weather_code": 1
+  }
+}
+```
+
+---
+
+### 6.2. Mock Edge Gateway Cluster Internal (`/api/gateway.php`)
+
+Endpoint gateway lokal untuk mereplikasi klaster sensor industri multi-node (suhu rack inflow/exhaust, daya listrik UPS, dan debit coolant chiller). Endpoint ini dirancang dengan parameter skenario deterministik untuk memvalidasi seluruh transisi state antarmuka.
+
+- **Method**: `GET`
+- **Endpoint**: `/api/gateway.php`
+- **Autentikasi**: Publik / Gateway Internal
+- **Parameter Skenario**:
+
+| Parameter | Tipe | Nilai Skenario | Dampak State UI |
+|---|---|---|---|
+| `scenario` | `string` | `normal` (default) | **Success State (200 OK)**: Mengembalikan 4 node telemetri operasional aktif. |
+| `scenario` | `string` | `empty` | **Empty State (200 OK)**: Mengembalikan array `nodes: []` kosong dengan pesan diagnostik. |
+| `scenario` | `string` | `error` | **Error State (500 Error)**: Mengembalikan error status HTTP 500 beserta kode diagnosa bus fault. |
+| `scenario` | `string` | `delay` | **Loading State**: Menambahkan simulasi latensi 2 detik (`sleep(2)`) sebelum merespon data. |
+| `delay` | `int` | `1..5` | Menentukan durasi tunda kustom dalam detik. |
+
+#### Sintaks Pengujian cURL Berdasarkan State:
+
+1. **Uji Sukses (200 OK)**:
+```bash
+curl -s "http://localhost/fragma/api/gateway.php"
+```
+
+2. **Uji Kosong (Empty State)**:
+```bash
+curl -s "http://localhost/fragma/api/gateway.php?scenario=empty"
+```
+
+3. **Uji Galat (Error 500)**:
+```bash
+curl -s -i "http://localhost/fragma/api/gateway.php?scenario=error"
+```
+
+4. **Uji Loading (Delay 2 Detik)**:
+```bash
+curl -s "http://localhost/fragma/api/gateway.php?delay=2"
+```
+
+#### Struktur Payload Galat (`500 Internal Server Error`):
+```json
+{
+  "success": false,
+  "status": "error",
+  "code": "GATEWAY_CLUSTER_TIMEOUT",
+  "message": "Kesalahan Internal 500: Server edge gateway cluster gagal merespons permintaan telemetri.",
+  "timestamp": "2026-10-07T02:23:18Z",
+  "details": {
+    "gateway_id": "FRAGMA-GW-EDGE-01",
+    "error_origin": "Upstream Microcontroller Bus Fault",
+    "suggested_action": "Periksa konektivitas jaringan transmisi atau ulangi permintaan."
+  }
+}
+```
+
+---
+
+### 6.3. Pola Implementasi JavaScript (Fetch, JSON, async/await)
+
+Semua komunikasi asinkron diimplementasikan menggunakan arsitektur penanganan kesalahan (*error boundary*) berikut:
+
+```javascript
+async function fetchTelemetry(targetUrl) {
+    renderLoadingState();
+    const startTime = performance.now();
+
+    try {
+        const response = await fetch(targetUrl, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+
+        const latencyMs = Math.round(performance.now() - startTime);
+        const json = await response.json();
+
+        if (!response.ok || json.success === false) {
+            const err = new Error(json.message || `HTTP Error ${response.status}`);
+            err.status = response.status;
+            err.payload = json;
+            throw err;
+        }
+
+        if (json.status === 'empty' || (Array.isArray(json.nodes) && json.nodes.length === 0)) {
+            renderEmptyState(json, latencyMs, response.status);
+            return;
+        }
+
+        renderSuccessState(json, latencyMs, response.status);
+    } catch (err) {
+        const latencyMs = Math.round(performance.now() - startTime);
+        renderErrorState(err, latencyMs);
+    }
+}
+```
+

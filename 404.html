@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found - Fragma</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .error-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            background-color: var(--bg-base);
+            text-align: center;
+        }
+        .error-content {
+            max-width: 480px;
+        }
+        .error-code {
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 16px;
+            font-family: var(--font-mono);
+        }
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+        .error-description {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+        .error-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+    </style>
+</head>
+<body>
+    <main class="error-wrapper">
+        <div class="error-content">
+            <div class="error-code">404</div>
+            <h1 class="error-title">Page not found</h1>
+            <p class="error-description">The page you are looking for does not exist or has been moved.</p>
+            <div class="error-actions">
+                <a href="/dashboard/" class="btn btn--primary">Go to Dashboard</a>
+                <a href="/" class="btn btn--ghost">Back to Home</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

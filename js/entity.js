@@ -35,6 +35,7 @@ function initEntityPage() {
     setupDeleteModal();
     setupInlineTester();
     setupKeyboardShortcuts();
+    setupStreamControls();
     loadEntityDetails();
 
     if (entityPollingIntervalId) {
@@ -383,43 +384,125 @@ async function refreshData() {
 }
 
 /**
- * Render raw telemetry table rows showing timestamps and formatted payloads.
+ * Render raw telemetry table rows showing timestamps, structured payload chips, and copy actions.
  */
 function renderDataTable() {
     const tbody = document.getElementById('dataTableBody');
-    const emptyRow = document.getElementById('dataTableEmpty');
+    const tableEl = document.getElementById('telemetryDataTable');
+    const emptyEl = document.getElementById('dataTableEmpty');
+    const countBadge = document.getElementById('streamCountBadge');
     if (!tbody) return;
 
+    if (countBadge) {
+        const len = currentDataPoints.length;
+        countBadge.textContent = `${len} ${len === 1 ? 'reading' : 'readings'}`;
+    }
+
     if (currentDataPoints.length === 0) {
-        tbody.innerHTML = '';
-        if (emptyRow) emptyRow.style.display = 'table-row';
+        tbody.replaceChildren();
+        if (emptyEl) emptyEl.style.display = 'block';
+        if (tableEl) tableEl.style.display = 'none';
         return;
     }
 
-    if (emptyRow) emptyRow.style.display = 'none';
-    tbody.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (tableEl) tableEl.style.display = 'table';
+    tbody.replaceChildren();
+
+    const fieldMap = new Map();
+    if (currentEntity && Array.isArray(currentEntity.fields)) {
+        currentEntity.fields.forEach(f => {
+            if (f && f.name) fieldMap.set(f.name, f);
+        });
+    }
 
     currentDataPoints.slice(0, 20).forEach(pt => {
         const tr = document.createElement('tr');
 
         const timeTd = document.createElement('td');
-        timeTd.textContent = formatDateTime(pt.recorded_at);
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'telemetry-timestamp';
+        timeSpan.textContent = formatDateTime(pt.recorded_at);
+        timeTd.appendChild(timeSpan);
         tr.appendChild(timeTd);
 
         const relTd = document.createElement('td');
-        relTd.textContent = formatRelativeTime(pt.recorded_at);
-        relTd.style.color = 'var(--text-secondary)';
+        const relSpan = document.createElement('span');
+        relSpan.className = 'telemetry-age';
+        relSpan.textContent = formatRelativeTime(pt.recorded_at);
+        relTd.appendChild(relSpan);
         tr.appendChild(relTd);
 
         const payloadTd = document.createElement('td');
-        const formattedPayload = Object.entries(pt.payload || {})
-            .map(([k, v]) => `<span class="field-tag">${escapeHtml(k)}: ${escapeHtml(v)}</span>`)
-            .join(' ');
-        payloadTd.innerHTML = formattedPayload;
+        const chipsWrap = document.createElement('div');
+        chipsWrap.className = 'telemetry-chips-wrap';
+
+        const entries = Object.entries(pt.payload || {});
+        if (entries.length === 0) {
+            const emptyChip = document.createElement('span');
+            emptyChip.className = 'field-tag';
+            emptyChip.textContent = 'Empty payload';
+            chipsWrap.appendChild(emptyChip);
+        } else {
+            entries.forEach(([key, val]) => {
+                const chip = document.createElement('div');
+                chip.className = 'telemetry-chip';
+
+                const keyEl = document.createElement('span');
+                keyEl.className = 'telemetry-chip__key';
+                keyEl.textContent = key;
+                chip.appendChild(keyEl);
+
+                const valEl = document.createElement('span');
+                valEl.className = 'telemetry-chip__val';
+                valEl.textContent = String(val);
+                chip.appendChild(valEl);
+
+                const fieldDef = fieldMap.get(key);
+                if (fieldDef && fieldDef.unit) {
+                    const unitEl = document.createElement('span');
+                    unitEl.className = 'telemetry-chip__unit';
+                    unitEl.textContent = fieldDef.unit;
+                    chip.appendChild(unitEl);
+                }
+
+                chipsWrap.appendChild(chip);
+            });
+        }
+        payloadTd.appendChild(chipsWrap);
         tr.appendChild(payloadTd);
+
+        const actionTd = document.createElement('td');
+        actionTd.style.textAlign = 'right';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'telemetry-row-btn';
+        copyBtn.title = 'Copy JSON';
+        copyBtn.textContent = 'Copy JSON';
+        copyBtn.onclick = () => {
+            const jsonText = JSON.stringify(pt.payload || {}, null, 2);
+            copyToClipboard(jsonText, copyBtn);
+        };
+        actionTd.appendChild(copyBtn);
+        tr.appendChild(actionTd);
 
         tbody.appendChild(tr);
     });
+}
+
+/**
+ * Bind telemetry stream manual refresh button.
+ */
+function setupStreamControls() {
+    const refreshBtn = document.getElementById('refreshStreamBtn');
+    if (refreshBtn) {
+        refreshBtn.onclick = async () => {
+            refreshBtn.disabled = true;
+            await refreshData();
+            refreshBtn.disabled = false;
+        };
+    }
 }
 
 /**

@@ -79,6 +79,8 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
     const strokeColor = config.color || '#4ecdc4';
     const fillColor = strokeColor.startsWith('#') ? strokeColor + '20' : 'rgba(78, 205, 196, 0.15)';
 
+    const isLineOnly = config.variant === 'line';
+
     const chart = new Chart(canvas, {
         type: 'line',
         data: {
@@ -88,11 +90,11 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
                 data: values.length > 0 ? values : [0],
                 borderColor: strokeColor,
                 backgroundColor: fillColor,
-                borderWidth: 2,
-                tension: 0.35,
-                pointRadius: values.length > 30 ? 0 : 3,
+                borderWidth: isLineOnly ? 2.5 : 1.5,
+                tension: isLineOnly ? 0.35 : 0.1,
+                pointRadius: values.length > 30 ? 0 : (isLineOnly ? 4 : 2),
                 pointHoverRadius: 6,
-                fill: true,
+                fill: !isLineOnly,
             }]
         },
         options: {
@@ -168,7 +170,7 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
         currentChart.data.datasets[0].data = newValues.length > 0 ? newValues : [0];
         
         // Hide points if too many
-        currentChart.data.datasets[0].pointRadius = newValues.length > 30 ? 0 : 3;
+        currentChart.data.datasets[0].pointRadius = newValues.length > 30 ? 0 : (config.variant === 'line' ? 4 : 2);
         
         // Update WITHOUT animation so it feels like a live dash
         currentChart.update('none');

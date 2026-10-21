@@ -163,6 +163,8 @@ function renderGlobalWidgets() {
                 renderLineChart(widgetWrapper, dataPoints, configCopy, widget.id, removeGlobalWidget);
             } else if (widget.type === 'value-card') {
                 renderValueCard(widgetWrapper, dataPoints, configCopy, widget.id, removeGlobalWidget);
+            } else if (widget.type === 'gauge') {
+                renderGauge(widgetWrapper, dataPoints, configCopy, widget.id, removeGlobalWidget);
             }
 
             container.appendChild(widgetWrapper);
@@ -201,13 +203,21 @@ function setupAddVisualForm() {
                     type: 'line-chart',
                     name: 'Time Series Chart',
                     tag: 'series',
+                    variant: 'area',
                     preview: '<svg width="120" height="60" viewBox="0 0 120 60" fill="none"><polyline points="5,50 20,30 40,40 60,15 80,25 100,5 115,20" stroke="#4ecdc4" stroke-width="2" fill="none"/><polyline points="5,55 20,42 40,48 60,30 80,38 100,22 115,35" stroke="#e74c6f" stroke-width="1.5" fill="none" opacity="0.5"/></svg>'
                 },
                 {
                     type: 'line-chart',
                     name: 'Line Chart',
                     tag: 'series',
+                    variant: 'line',
                     preview: '<svg width="120" height="60" viewBox="0 0 120 60" fill="none"><polyline points="5,45 30,20 60,35 90,10 115,30" stroke="#2ecc71" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>'
+                },
+                {
+                    type: 'gauge',
+                    name: 'Gauge Meter',
+                    tag: 'latest',
+                    preview: '<svg width="120" height="60" viewBox="0 0 120 60"><path d="M 25 50 A 35 35 0 0 1 95 50" stroke="rgba(30,30,46,0.8)" stroke-width="10" stroke-linecap="round" fill="none"/><path d="M 25 50 A 35 35 0 0 1 65 18" stroke="#4ecdc4" stroke-width="10" stroke-linecap="round" fill="none"/></svg>'
                 },
                 {
                     type: 'line-chart',
@@ -234,6 +244,18 @@ function setupAddVisualForm() {
                     tag: 'latest',
                     variant: 'entity',
                     preview: '<div style="text-align:center;display:flex;align-items:center;gap:10px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ecdc4" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><div><div style="font-size:2rem;font-weight:700;color:#4ecdc4;line-height:1">296</div><div style="font-size:0.6rem;color:var(--text-muted)">Devices</div></div></div>'
+                }
+            ]
+        },
+        controls: {
+            title: 'Control Widgets',
+            widgets: [
+                {
+                    type: 'toggle-switch',
+                    name: 'Toggle Switch',
+                    tag: 'action',
+                    disabled: true,
+                    preview: '<div style="display:flex;align-items:center;justify-content:center;height:100%"><svg width="60" height="32" viewBox="0 0 60 32" fill="none"><rect width="60" height="32" rx="16" fill="var(--accent)" opacity="0.8"/><circle cx="44" cy="16" r="12" fill="#fff"/></svg></div>'
                 }
             ]
         }
@@ -279,6 +301,10 @@ function setupAddVisualForm() {
                     document.getElementById('pickerStep3Title').textContent = w.name;
                     document.getElementById('visualLabelInput').placeholder = `e.g. ${w.name}`;
                     selectedVariant = w.variant || null;
+                    
+                    const gaugeGroup = document.getElementById('gaugeConfigGroup');
+                    if (gaugeGroup) gaugeGroup.style.display = w.type === 'gauge' ? 'block' : 'none';
+                    
                     showStep(3);
                 });
             }
@@ -408,6 +434,13 @@ async function handleAddVisualSubmit(e) {
             color: color || '#4ecdc4'
         };
         if (selectedVariant) widgetConfig.variant = selectedVariant;
+        
+        if (type === 'gauge') {
+            const minInput = document.getElementById('visualMinInput');
+            const maxInput = document.getElementById('visualMaxInput');
+            if (minInput && minInput.value !== '') widgetConfig.min = minInput.value;
+            if (maxInput && maxInput.value !== '') widgetConfig.max = maxInput.value;
+        }
 
         await apiFetch(`/widgets.php?entity_id=${entityId}`, {
             method: 'POST',

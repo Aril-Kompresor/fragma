@@ -1,8 +1,15 @@
 /**
- * Main dashboard application controller managing entity listings, creation modal, and polling.
+ * Main dashboard application controller managing ThingsBoard-style entity table, creation modal, and polling.
  */
 
 let pollingIntervalId = null;
+let rawEntities = [];
+let currentTab = 'all';
+let searchQuery = '';
+let currentPage = 1;
+let pageSize = 10;
+let isPollingEnabled = true;
+let selectedEntityIds = new Set();
 
 /**
  * Initialize dashboard view, load entities, and establish background polling.
@@ -16,134 +23,421 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initDashboard() {
     setupModalEvents();
+    setupThingsBoardControls();
     loadEntities();
-
-    if (pollingIntervalId) {
-        clearInterval(pollingIntervalId);
-    }
-    pollingIntervalId = setInterval(loadEntities, 10000);
+    startPolling();
 
     window.addEventListener('beforeunload', () => {
-        if (pollingIntervalId) {
-            clearInterval(pollingIntervalId);
-        }
+        stopPolling();
     });
 }
 
 /**
- * Fetch entity collection from backend and update DOM grid.
+ * Start periodic live polling.
+ */
+function startPolling() {
+    stopPolling();
+    if (!isPollingEnabled) return;
+    pollingIntervalId = setInterval(loadEntities, 10000);
+}
+
+/**
+ * Clear existing background polling timer.
+ */
+function stopPolling() {
+    if (pollingIntervalId) {
+        clearInterval(pollingIntervalId);
+        pollingIntervalId = null;
+    }
+}
+
+/**
+ * Setup ThingsBoard toolbar controls, search, tabs, and pagination handlers.
+ */
+function setupThingsBoardControls() {
+    const tabAll = document.getElementById('tabAllEntities');
+    const tabActive = document.getElementById('tabActiveEntities');
+    const tabInactive = document.getElementById('tabInactiveEntities');
+    const searchInput = document.getElementById('tbSearchInput');
+    const refreshBtn = document.getElementById('tbRefreshBtn');
+    const pollingToggle = document.getElementById('tbPollingToggle');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const pageSizeSelect = document.getElementById('itemsPerPageSelect');
+    const btnFirst = document.getElementById('btnPageFirst');
+    const btnPrev = document.getElementById('btnPagePrev');
+    const btnNext = document.getElementById('btnPageNext');
+    const btnLast = document.getElementById('btnPageLast');
+
+    const selectTab = (tabName, clickedBtn) => {
+        currentTab = tabName;
+        [tabAll, tabActive, tabInactive].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('tb-tab--active');
+                btn.setAttribute('aria-selected', 'false');
+            }
+        });
+        if (clickedBtn) {
+            clickedBtn.classList.add('tb-tab--active');
+            clickedBtn.setAttribute('aria-selected', 'true');
+        }
+        currentPage = 1;
+        applyFilterAndRender();
+    };
+
+    if (tabAll) tabAll.onclick = () => selectTab('all', tabAll);
+    if (tabActive) tabActive.onclick = () => selectTab('active', tabActive);
+    if (tabInactive) tabInactive.onclick = () => selectTab('inactive', tabInactive);
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            currentPage = 1;
+            applyFilterAndRender();
+        });
+    }
+
+    if (refreshBtn) {
+        refreshBtn.onclick = async () => {
+            refreshBtn.disabled = true;
+            await loadEntities();
+            refreshBtn.disabled = false;
+        };
+    }
+
+    if (pollingToggle) {
+        pollingToggle.onchange = () => {
+            isPollingEnabled = pollingToggle.checked;
+            if (isPollingEnabled) {
+                startPolling();
+            } else {
+                stopPolling();
+            }
+        };
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.onchange = () => {
+            const isChecked = selectAllCheckbox.checked;
+            const rowCheckboxes = document.querySelectorAll('.tb-row-checkbox');
+            rowCheckboxes.forEach(cb => {
+                cb.checked = isChecked;
+                const entityId = parseInt(cb.dataset.id, 10);
+                if (isChecked) {
+                    selectedEntityIds.add(entityId);
+                } else {
+                    selectedEntityIds.delete(entityId);
+                }
+                const tr = cb.closest('tr');
+                if (tr) tr.classList.toggle('tb-row-selected', isChecked);
+            });
+        };
+    }
+
+    if (pageSizeSelect) {
+        pageSizeSelect.onchange = () => {
+            pageSize = parseInt(pageSizeSelect.value, 10) || 10;
+            currentPage = 1;
+            applyFilterAndRender();
+        };
+    }
+
+    if (btnFirst) btnFirst.onclick = () => { currentPage = 1; applyFilterAndRender(); };
+    if (btnPrev) btnPrev.onclick = () => { if (currentPage > 1) { currentPage--; applyFilterAndRender(); } };
+    if (btnNext) btnNext.onclick = () => { currentPage++; applyFilterAndRender(); };
+    if (btnLast) btnLast.onclick = () => {
+        const filtered = getFilteredEntities();
+        const maxPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+        currentPage = maxPages;
+        applyFilterAndRender();
+    };
+}
+
+/**
+ * Fetch entity collection from backend and update ThingsBoard data table.
  */
 async function loadEntities() {
-    const grid = document.getElementById('entitiesGrid');
     const loading = document.getElementById('entitiesLoading');
 
     try {
         const entities = await apiFetch('/entities.php');
         if (loading) loading.style.display = 'none';
 
-        if (!Array.isArray(entities) || entities.length === 0) {
-            renderEmptyState(grid);
-            return;
-        }
-
-        renderEntityGrid(grid, entities);
+        rawEntities = Array.isArray(entities) ? entities : [];
+        updateTabCounts();
+        applyFilterAndRender();
     } catch (err) {
         if (loading) loading.style.display = 'none';
-        if (grid && !grid.querySelector('.entity-card')) {
-            grid.innerHTML = `
-                <div class="empty-state" style="grid-column: 1 / -1;">
-                    <div class="empty-state__icon">⚠️</div>
-                    <div class="empty-state__title">Unable to load entities</div>
-                    <div class="empty-state__text">${escapeHtml(err.message)}</div>
-                    <button class="btn btn--ghost" onclick="loadEntities()">Retry</button>
-                </div>
+        const tbody = document.getElementById('entitiesTableBody');
+        if (tbody && rawEntities.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 40px; color: var(--danger);">
+                        Failed to load devices: ${escapeHtml(err.message)}
+                    </td>
+                </tr>
             `;
         }
     }
 }
 
 /**
- * Render empty state placeholder when no entities exist.
+ * Update entity count indicators on tabs.
  */
-function renderEmptyState(grid) {
-    grid.innerHTML = `
-        <div class="empty-state" style="grid-column: 1 / -1;">
-            <div class="empty-state__icon">📡</div>
-            <div class="empty-state__title">No IoT Entities Yet</div>
-            <div class="empty-state__text">Create your first entity to start pushing data from your ESP32, Arduino, or other devices.</div>
-            <button class="btn btn--primary" onclick="openCreateModal()">+ Create Entity</button>
-        </div>
-    `;
+function updateTabCounts() {
+    const countAll = document.getElementById('countAllEntities');
+    const countActive = document.getElementById('countActiveEntities');
+    const countInactive = document.getElementById('countInactiveEntities');
+
+    let activeCount = 0;
+    let inactiveCount = 0;
+
+    rawEntities.forEach(item => {
+        const isRecent = item.last_data_at && (new Date() - new Date(item.last_data_at.replace(' ', 'T') + 'Z') < 120000);
+        if (isRecent) {
+            activeCount++;
+        } else {
+            inactiveCount++;
+        }
+    });
+
+    if (countAll) countAll.textContent = String(rawEntities.length);
+    if (countActive) countActive.textContent = String(activeCount);
+    if (countInactive) countInactive.textContent = String(inactiveCount);
 }
 
 /**
- * Render entity list items into card elements.
+ * Filter entity list based on active tab and search query string.
  */
-function renderEntityGrid(grid, entities) {
-    grid.innerHTML = '';
-
-    for (const item of entities) {
-        const card = document.createElement('a');
-        card.href = `/entity/index.html?id=${item.id}`;
-        card.className = 'card entity-card';
-
-        const header = document.createElement('div');
-        header.className = 'entity-card__header';
-
-        const title = document.createElement('h3');
-        title.className = 'entity-card__title';
-        title.textContent = item.name;
-
+function getFilteredEntities() {
+    return rawEntities.filter(item => {
         const isRecent = item.last_data_at && (new Date() - new Date(item.last_data_at.replace(' ', 'T') + 'Z') < 120000);
-        const badge = document.createElement('span');
-        badge.className = `entity-card__badge ${isRecent ? 'entity-card__badge--active' : 'entity-card__badge--idle'}`;
-        badge.innerHTML = `<span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span> ${isRecent ? 'Online' : 'Idle'}`;
 
-        header.appendChild(title);
-        header.appendChild(badge);
+        if (currentTab === 'active' && !isRecent) return false;
+        if (currentTab === 'inactive' && isRecent) return false;
 
-        const body = document.createElement('div');
-        body.className = 'entity-card__body';
-
-        const fieldsContainer = document.createElement('div');
-        fieldsContainer.className = 'entity-card__fields';
-
-        if (Array.isArray(item.fields) && item.fields.length > 0) {
-            item.fields.forEach(f => {
-                const tag = document.createElement('span');
-                tag.className = 'field-tag';
-                tag.textContent = `${f.name}${f.unit ? ` (${f.unit})` : ''}`;
-                fieldsContainer.appendChild(tag);
-            });
-        } else {
-            const noField = document.createElement('span');
-            noField.className = 'field-tag';
-            noField.style.background = 'rgba(243, 156, 18, 0.12)';
-            noField.style.color = 'var(--warning)';
-            noField.style.borderColor = 'rgba(243, 156, 18, 0.3)';
-            noField.textContent = 'Awaiting Field Detection';
-            fieldsContainer.appendChild(noField);
+        if (searchQuery) {
+            const nameMatch = (item.name || '').toLowerCase().includes(searchQuery);
+            const fieldsMatch = Array.isArray(item.fields) && item.fields.some(f => (f.name || '').toLowerCase().includes(searchQuery));
+            if (!nameMatch && !fieldsMatch) return false;
         }
 
-        body.appendChild(fieldsContainer);
+        return true;
+    });
+}
 
-        const footer = document.createElement('div');
-        footer.className = 'entity-card__footer';
+/**
+ * Apply filtering, calculate pagination slice, and render table rows.
+ */
+function applyFilterAndRender() {
+    const filtered = getFilteredEntities();
+    const totalCount = filtered.length;
+    const maxPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-        const countSpan = document.createElement('span');
-        countSpan.textContent = `${item.data_count || 0} data points`;
+    if (currentPage > maxPages) currentPage = maxPages;
+    if (currentPage < 1) currentPage = 1;
 
-        const timeSpan = document.createElement('span');
-        timeSpan.textContent = item.last_data_at ? formatRelativeTime(item.last_data_at) : 'No data yet';
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalCount);
+    const pageItems = filtered.slice(startIndex, endIndex);
 
-        footer.appendChild(countSpan);
-        footer.appendChild(timeSpan);
+    renderThingsBoardTable(pageItems, totalCount, startIndex, endIndex, maxPages);
+}
 
-        card.appendChild(header);
-        card.appendChild(body);
-        card.appendChild(footer);
+/**
+ * Render ThingsBoard-style entity table rows and update pagination elements.
+ */
+function renderThingsBoardTable(items, totalCount, startIndex, endIndex, maxPages) {
+    const tableEl = document.getElementById('entitiesTable');
+    const tbody = document.getElementById('entitiesTableBody');
+    const emptyEl = document.getElementById('entitiesEmptyState');
+    const paginationInfo = document.getElementById('tbPaginationInfo');
+    const btnFirst = document.getElementById('btnPageFirst');
+    const btnPrev = document.getElementById('btnPagePrev');
+    const btnNext = document.getElementById('btnPageNext');
+    const btnLast = document.getElementById('btnPageLast');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
 
-        grid.appendChild(card);
+    if (!tbody) return;
+
+    if (totalCount === 0) {
+        tbody.replaceChildren();
+        if (tableEl) tableEl.style.display = 'none';
+        if (emptyEl) emptyEl.style.display = 'block';
+        if (paginationInfo) paginationInfo.textContent = '0 - 0 of 0';
+        if (btnFirst) btnFirst.disabled = true;
+        if (btnPrev) btnPrev.disabled = true;
+        if (btnNext) btnNext.disabled = true;
+        if (btnLast) btnLast.disabled = true;
+        return;
+    }
+
+    if (tableEl) tableEl.style.display = 'table';
+    if (emptyEl) emptyEl.style.display = 'none';
+    tbody.replaceChildren();
+
+    if (paginationInfo) {
+        paginationInfo.textContent = `${startIndex + 1} - ${endIndex} of ${totalCount}`;
+    }
+
+    if (btnFirst) btnFirst.disabled = currentPage <= 1;
+    if (btnPrev) btnPrev.disabled = currentPage <= 1;
+    if (btnNext) btnNext.disabled = currentPage >= maxPages;
+    if (btnLast) btnLast.disabled = currentPage >= maxPages;
+
+    let allChecked = items.length > 0;
+
+    items.forEach(item => {
+        const tr = document.createElement('tr');
+        const isSelected = selectedEntityIds.has(item.id);
+        if (isSelected) tr.classList.add('tb-row-selected');
+
+        const isRecent = item.last_data_at && (new Date() - new Date(item.last_data_at.replace(' ', 'T') + 'Z') < 120000);
+
+        const checkTd = document.createElement('td');
+        checkTd.className = 'tb-td-checkbox';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'tb-checkbox tb-row-checkbox';
+        checkbox.dataset.id = String(item.id);
+        checkbox.checked = isSelected;
+        if (!isSelected) allChecked = false;
+        checkbox.onchange = (e) => {
+            e.stopPropagation();
+            if (checkbox.checked) {
+                selectedEntityIds.add(item.id);
+                tr.classList.add('tb-row-selected');
+            } else {
+                selectedEntityIds.delete(item.id);
+                tr.classList.remove('tb-row-selected');
+            }
+        };
+        checkTd.appendChild(checkbox);
+        tr.appendChild(checkTd);
+
+        const timeTd = document.createElement('td');
+        timeTd.style.fontFamily = 'var(--font-mono)';
+        timeTd.style.fontSize = '0.8rem';
+        timeTd.style.color = 'var(--text-secondary)';
+        timeTd.textContent = formatDateTime(item.created_at);
+        tr.appendChild(timeTd);
+
+        const nameTd = document.createElement('td');
+        const nameLink = document.createElement('a');
+        nameLink.href = `/entity/index.html?id=${item.id}`;
+        nameLink.className = 'tb-row-name-link';
+        nameLink.textContent = item.name;
+        nameTd.appendChild(nameLink);
+        tr.appendChild(nameTd);
+
+        const profileTd = document.createElement('td');
+        const profileBadge = document.createElement('span');
+        profileBadge.className = 'tb-profile-badge';
+        profileBadge.textContent = 'ESP32 Device Profile';
+        profileTd.appendChild(profileBadge);
+        tr.appendChild(profileTd);
+
+        const fieldsTd = document.createElement('td');
+        const fieldsWrap = document.createElement('div');
+        fieldsWrap.style.display = 'flex';
+        fieldsWrap.style.flexWrap = 'wrap';
+        fieldsWrap.style.gap = '6px';
+        fieldsWrap.style.alignItems = 'center';
+
+        const hasData = (item.data_count || 0) > 0;
+        const latest = (item.latest_payload && typeof item.latest_payload === 'object') ? item.latest_payload : {};
+        const fields = Array.isArray(item.fields) ? item.fields : [];
+
+        if (!hasData || fields.length === 0) {
+            const waitingPill = document.createElement('span');
+            waitingPill.className = 'tb-telemetry-badge tb-telemetry-badge--waiting';
+            waitingPill.innerHTML = `<span class="tb-pulse-dot"></span><span>Awaiting API Telemetry</span>`;
+            fieldsWrap.appendChild(waitingPill);
+        } else {
+            const maxVisible = 3;
+            fields.slice(0, maxVisible).forEach(f => {
+                const chip = document.createElement('span');
+                chip.className = 'tb-telemetry-chip';
+                const keySpan = document.createElement('span');
+                keySpan.className = 'tb-telemetry-chip__key';
+                keySpan.textContent = `${f.name}:`;
+                chip.appendChild(keySpan);
+
+                const valSpan = document.createElement('span');
+                valSpan.className = 'tb-telemetry-chip__val';
+                let valDisplay = latest[f.name] !== undefined ? String(latest[f.name]) : '-';
+                if (f.unit && valDisplay !== '-') {
+                    valDisplay += ` ${f.unit}`;
+                }
+                valSpan.textContent = valDisplay;
+                chip.appendChild(valSpan);
+
+                fieldsWrap.appendChild(chip);
+            });
+
+            if (fields.length > maxVisible) {
+                const moreChip = document.createElement('span');
+                moreChip.className = 'tb-telemetry-chip';
+                moreChip.style.color = 'var(--text-muted)';
+                moreChip.title = fields.slice(maxVisible).map(f => f.name).join(', ');
+                moreChip.textContent = `+${fields.length - maxVisible} more`;
+                fieldsWrap.appendChild(moreChip);
+            }
+        }
+        fieldsTd.appendChild(fieldsWrap);
+        tr.appendChild(fieldsTd);
+
+        const stateTd = document.createElement('td');
+        const stateBadge = document.createElement('span');
+        stateBadge.className = `tb-state-badge ${isRecent ? 'tb-state-badge--active' : 'tb-state-badge--inactive'}`;
+        stateBadge.textContent = isRecent ? 'Active' : 'Inactive';
+        stateTd.appendChild(stateBadge);
+        tr.appendChild(stateTd);
+
+        const countTd = document.createElement('td');
+        countTd.style.fontFamily = 'var(--font-mono)';
+        countTd.style.fontSize = '0.82rem';
+        countTd.textContent = `${item.data_count || 0}`;
+        tr.appendChild(countTd);
+
+        const lastTd = document.createElement('td');
+        lastTd.style.fontSize = '0.8rem';
+        lastTd.style.color = 'var(--text-secondary)';
+        lastTd.textContent = item.last_data_at ? formatRelativeTime(item.last_data_at) : 'Never';
+        tr.appendChild(lastTd);
+
+        const actionsTd = document.createElement('td');
+        actionsTd.style.textAlign = 'right';
+        const actionsWrap = document.createElement('div');
+        actionsWrap.className = 'tb-row-actions';
+
+        const credBtn = document.createElement('a');
+        credBtn.href = `/entity/index.html?id=${item.id}`;
+        credBtn.className = 'tb-action-icon-btn';
+        credBtn.title = 'Device credentials';
+        credBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`;
+        actionsWrap.appendChild(credBtn);
+
+        const openBtn = document.createElement('a');
+        openBtn.href = `/entity/index.html?id=${item.id}`;
+        openBtn.className = 'tb-action-icon-btn';
+        openBtn.title = 'View device details';
+        openBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        actionsWrap.appendChild(openBtn);
+
+        const deleteBtn = document.createElement('a');
+        deleteBtn.href = `/entity/index.html?id=${item.id}`;
+        deleteBtn.className = 'tb-action-icon-btn';
+        deleteBtn.title = 'Manage or delete device';
+        deleteBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        actionsWrap.appendChild(deleteBtn);
+        actionsTd.appendChild(actionsWrap);
+        tr.appendChild(actionsTd);
+
+        tbody.appendChild(tr);
+    });
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = allChecked;
     }
 }
 
@@ -153,13 +447,13 @@ function renderEntityGrid(grid, entities) {
 function validateEntityName(name) {
     const trimmed = name.trim();
     if (!trimmed) {
-        return { valid: false, error: 'Entity name is required.' };
+        return { valid: false, error: 'Device name is required.' };
     }
     if (trimmed.length < 3 || trimmed.length > 50) {
-        return { valid: false, error: 'Entity name must be between 3 and 50 characters.' };
+        return { valid: false, error: 'Device name must be between 3 and 50 characters.' };
     }
     if (!/^[a-zA-Z0-9\s_-]+$/.test(trimmed)) {
-        return { valid: false, error: 'Entity name may only contain letters, numbers, spaces, hyphens, and underscores.' };
+        return { valid: false, error: 'Device name may only contain letters, numbers, spaces, hyphens, and underscores.' };
     }
     return { valid: true };
 }
@@ -182,34 +476,6 @@ function validateEntityInterval(intervalVal) {
     const num = Number(intervalVal);
     if (!intervalVal || !Number.isInteger(num) || num < 5 || num > 3600) {
         return { valid: false, error: 'Post interval must be a whole number between 5 and 3600 seconds.' };
-    }
-    return { valid: true };
-}
-
-/**
- * Validate optional field key identifier syntax and length constraint.
- */
-function validateInitialFieldName(fieldName) {
-    const trimmed = fieldName.trim();
-    if (!trimmed) {
-        return { valid: true };
-    }
-    if (trimmed.length < 2 || trimmed.length > 30) {
-        return { valid: false, error: 'Field key must be between 2 and 30 characters.' };
-    }
-    if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
-        return { valid: false, error: 'Field key must start with a lowercase letter and contain only lowercase letters, digits, and underscores.' };
-    }
-    return { valid: true };
-}
-
-/**
- * Validate optional telemetry field unit length constraint.
- */
-function validateInitialFieldUnit(unit) {
-    const trimmed = unit.trim();
-    if (trimmed.length > 10) {
-        return { valid: false, error: 'Measurement unit cannot exceed 10 characters.' };
     }
     return { valid: true };
 }
@@ -255,14 +521,11 @@ function clearAllCreateFormErrors() {
         { inputId: 'entityNameInput', errorId: 'entityNameError' },
         { inputId: 'entityPlatformSelect', errorId: 'entityPlatformError' },
         { inputId: 'entityIntervalInput', errorId: 'entityIntervalError' },
-        { inputId: 'initialFieldNameInput', errorId: 'initialFieldNameError' },
-        { inputId: 'initialFieldUnitInput', errorId: 'initialFieldUnitError' },
         { inputId: 'entityNotesInput', errorId: 'entityNotesError' }
     ];
 
     fields.forEach(({ inputId, errorId }) => {
-        const id = inputId || 'initialFieldNameInput';
-        const inputEl = document.getElementById(id);
+        const inputEl = document.getElementById(inputId);
         const errorEl = document.getElementById(errorId);
         clearFieldError(inputEl, errorEl);
     });
@@ -286,10 +549,6 @@ function validateEntireCreateForm() {
     const platformError = document.getElementById('entityPlatformError');
     const intervalInput = document.getElementById('entityIntervalInput');
     const intervalError = document.getElementById('entityIntervalError');
-    const fieldNameInput = document.getElementById('initialFieldNameInput');
-    const fieldNameError = document.getElementById('initialFieldNameError');
-    const fieldUnitInput = document.getElementById('initialFieldUnitInput');
-    const fieldUnitError = document.getElementById('initialFieldUnitError');
     const notesInput = document.getElementById('entityNotesInput');
     const notesError = document.getElementById('entityNotesError');
     const summaryEl = document.getElementById('formValidationSummary');
@@ -316,20 +575,6 @@ function validateEntireCreateForm() {
         setFieldError(intervalInput, intervalError, intervalRes.error);
         errors.push(intervalRes.error);
         if (!firstInvalidElement) firstInvalidElement = intervalInput;
-    }
-
-    const fieldNameRes = validateInitialFieldName(fieldNameInput.value);
-    if (!fieldNameRes.valid) {
-        setFieldError(fieldNameInput, fieldNameError, fieldNameRes.error);
-        errors.push(fieldNameRes.error);
-        if (!firstInvalidElement) firstInvalidElement = fieldNameInput;
-    }
-
-    const fieldUnitRes = validateInitialFieldUnit(fieldUnitInput.value);
-    if (!fieldUnitRes.valid) {
-        setFieldError(fieldUnitInput, fieldUnitError, fieldUnitRes.error);
-        errors.push(fieldUnitRes.error);
-        if (!firstInvalidElement) firstInvalidElement = fieldUnitInput;
     }
 
     const notesRes = validateEntityNotes(notesInput.value);
@@ -399,17 +644,17 @@ function setupModalEvents() {
     const platformError = document.getElementById('entityPlatformError');
     const intervalInput = document.getElementById('entityIntervalInput');
     const intervalError = document.getElementById('entityIntervalError');
-    const fieldNameInput = document.getElementById('initialFieldNameInput');
-    const fieldNameError = document.getElementById('initialFieldNameError');
-    const fieldUnitInput = document.getElementById('initialFieldUnitInput');
     const notesInput = document.getElementById('entityNotesInput');
     const notesError = document.getElementById('entityNotesError');
     const notesCounter = document.getElementById('entityNotesCounter');
+
+    const doneSuccessBtn = document.getElementById('doneSuccessModalBtn');
 
     if (openBtn) openBtn.addEventListener('click', openCreateModal);
     if (closeBtn) closeBtn.addEventListener('click', closeCreateModal);
     if (cancelBtn) cancelBtn.addEventListener('click', closeCreateModal);
     if (closeSuccessBtn) closeSuccessBtn.addEventListener('click', closeSuccessModal);
+    if (doneSuccessBtn) doneSuccessBtn.addEventListener('click', closeSuccessModal);
 
     if (modal) {
         modal.addEventListener('click', (e) => {
@@ -459,32 +704,6 @@ function setupModalEvents() {
             const res = validateEntityInterval(intervalInput.value);
             if (!res.valid) setFieldError(intervalInput, intervalError, res.error);
             else clearFieldError(intervalInput, intervalError);
-        });
-    }
-
-    if (fieldNameInput) {
-        fieldNameInput.addEventListener('input', () => {
-            if (fieldNameInput.getAttribute('aria-invalid') === 'true') {
-                const res = validateInitialFieldName(fieldNameInput.value);
-                if (res.valid) clearFieldError(fieldNameInput, fieldNameError);
-            }
-        });
-        fieldNameInput.addEventListener('blur', () => {
-            if (fieldNameInput.value.trim().length > 0) {
-                const res = validateInitialFieldName(fieldNameInput.value);
-                if (!res.valid) setFieldError(fieldNameInput, fieldNameError, res.error);
-                else clearFieldError(fieldNameInput, fieldNameError);
-            }
-        });
-    }
-
-    if (fieldUnitInput) {
-        fieldUnitInput.addEventListener('input', () => {
-            if (fieldUnitInput.getAttribute('aria-invalid') === 'true') {
-                const res = validateInitialFieldUnit(fieldUnitInput.value);
-                const unitError = document.getElementById('initialFieldUnitError');
-                if (res.valid) clearFieldError(fieldUnitInput, unitError);
-            }
         });
     }
 
@@ -567,22 +786,9 @@ async function handleCreateEntitySubmit(e) {
     const submitBtn = document.getElementById('submitCreateBtn');
     const submitBtnText = document.getElementById('submitCreateBtnText');
     const nameInput = document.getElementById('entityNameInput');
-    const fieldNameInput = document.getElementById('initialFieldNameInput');
-    const fieldUnitInput = document.getElementById('initialFieldUnitInput');
     const summaryEl = document.getElementById('formValidationSummary');
 
     const name = nameInput.value.trim();
-    const fields = [];
-    const fieldKey = fieldNameInput ? fieldNameInput.value.trim() : '';
-    const fieldUnit = fieldUnitInput ? fieldUnitInput.value.trim() : '';
-
-    if (fieldKey) {
-        fields.push({
-            name: fieldKey,
-            type: 'number',
-            unit: fieldUnit
-        });
-    }
 
     try {
         if (submitBtn) submitBtn.disabled = true;
@@ -590,7 +796,7 @@ async function handleCreateEntitySubmit(e) {
 
         const newEntity = await apiFetch('/entities.php', {
             method: 'POST',
-            body: { name, fields }
+            body: { name, fields: [] }
         });
 
         saveLocalApiKey(newEntity.id, newEntity.api_key);
@@ -602,30 +808,79 @@ async function handleCreateEntitySubmit(e) {
             summaryEl.classList.remove('form-summary--hidden');
             summaryEl.focus();
         } else {
-            alert(`Failed to create entity: ${err.message}`);
+            alert(`Failed to create device: ${err.message}`);
         }
     } finally {
         if (submitBtn) submitBtn.disabled = false;
-        if (submitBtnText) submitBtnText.textContent = 'Create Entity';
+        if (submitBtnText) submitBtnText.textContent = 'Create Device';
     }
 }
 
 /**
- * Display the created entity's API key with copy controls and redirect action.
+ * Display the created entity's API key with copy controls, cURL snippet, and test push action.
  */
 function showKeySuccessModal(entity) {
     const modal = document.getElementById('keySuccessModal');
     const keyDisplay = document.getElementById('newApiKeyDisplay');
+    const curlSnippetEl = document.getElementById('newApiCurlSnippet');
+    const copyCurlBtn = document.getElementById('copyCurlExampleBtn');
     const copyBtn = document.getElementById('copyNewKeyBtn');
+    const testPushBtn = document.getElementById('testPushTelemetryBtn');
     const viewEntityBtn = document.getElementById('goToNewEntityBtn');
 
     if (!modal) return;
 
     if (keyDisplay) keyDisplay.textContent = entity.api_key;
 
+    const curlCmd = `curl -X POST ${window.location.origin}/api/data.php \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: ${entity.api_key}" \\
+  -d '{"temperature": 24.5, "humidity": 62, "status": "active"}'`;
+
+    if (curlSnippetEl) {
+        curlSnippetEl.textContent = curlCmd;
+    }
+
+    if (copyCurlBtn) {
+        copyCurlBtn.onclick = () => {
+            copyToClipboard(curlCmd, copyCurlBtn);
+        };
+    }
+
     if (copyBtn) {
         copyBtn.onclick = () => {
             copyToClipboard(entity.api_key, copyBtn);
+        };
+    }
+
+    if (testPushBtn) {
+        testPushBtn.disabled = false;
+        testPushBtn.textContent = 'Send Test Telemetry';
+        testPushBtn.style.color = 'var(--accent)';
+        testPushBtn.style.borderColor = 'var(--accent)';
+        testPushBtn.onclick = async () => {
+            testPushBtn.disabled = true;
+            testPushBtn.textContent = 'Streaming...';
+            try {
+                await apiFetch('/data.php', {
+                    method: 'POST',
+                    headers: { 'X-API-Key': entity.api_key },
+                    body: {
+                        temperature: Number((22 + Math.random() * 6).toFixed(1)),
+                        humidity: Number((50 + Math.random() * 20).toFixed(1)),
+                        battery: 98,
+                        status: 'online'
+                    }
+                });
+                testPushBtn.textContent = 'Telemetry Ingested!';
+                testPushBtn.style.color = 'var(--success)';
+                testPushBtn.style.borderColor = 'var(--success)';
+                await loadEntities();
+            } catch (err) {
+                testPushBtn.disabled = false;
+                testPushBtn.textContent = 'Push Failed';
+                testPushBtn.style.color = 'var(--danger)';
+            }
         };
     }
 
@@ -637,3 +892,4 @@ function showKeySuccessModal(entity) {
 
     modal.classList.add('modal-backdrop--open');
 }
+

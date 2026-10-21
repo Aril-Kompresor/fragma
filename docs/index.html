@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma API Documentation: Developers Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261021c">
+    <link rel="stylesheet" href="/css/docs.css">
+</head>
+<body class="docs-wrapper">
+    <header class="docs-header">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <a href="/" class="docs-header__brand">
+                <span class="navbar__logo-dot"></span>
+                <span>Fragma</span>
+            </a>
+            <span class="docs-header__badge">v1.0.0-RC1</span>
+        </div>
+
+        <div class="docs-search">
+            <svg class="docs-search__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="docsSearchInput" class="docs-search__input" placeholder="Search documentation...">
+            <span class="docs-search__shortcut">/</span>
+        </div>
+
+        <div class="docs-header__actions">
+            <a href="/dashboard/index.html" class="btn btn--primary btn--sm">
+                App Dashboard
+            </a>
+        </div>
+    </header>
+
+    <div class="docs-layout">
+        <aside class="docs-nav" id="docsNav">
+            <div class="docs-nav__group">
+                <div class="docs-nav__title">Getting Started</div>
+                <ul class="docs-nav__list">
+                    <li><a href="#introduction" class="docs-nav__link docs-nav__link--active">Overview &amp; Architecture</a></li>
+                    <li><a href="#authentication" class="docs-nav__link">Authentication &amp; API Key</a></li>
+                </ul>
+            </div>
+
+            <div class="docs-nav__group">
+                <div class="docs-nav__title">REST API Endpoints</div>
+                <ul class="docs-nav__list">
+                    <li><a href="#data-api" class="docs-nav__link">Telemetry Ingestion &amp; Pull</a></li>
+                    <li><a href="#entities-api" class="docs-nav__link">Entity Management</a></li>
+                    <li><a href="#widgets-api" class="docs-nav__link">Visual Widgets Config</a></li>
+                    <li><a href="#simulation-api" class="docs-nav__link">Data Simulation</a></li>
+                </ul>
+            </div>
+
+            <div class="docs-nav__group">
+                <div class="docs-nav__title">PTS Release Candidate</div>
+                <ul class="docs-nav__list">
+                    <li><a href="#pts-bridge-api" class="docs-nav__link">Live Open-Meteo &amp; Bridge</a></li>
+                    <li><a href="#mock-gateway-api" class="docs-nav__link">Mock Edge Gateway Cluster</a></li>
+                    <li><a href="#ui-states" class="docs-nav__link">UI State Lifecycle Matrix</a></li>
+                </ul>
+            </div>
+
+            <div class="docs-nav__group">
+                <div class="docs-nav__title">Client Integration</div>
+                <ul class="docs-nav__list">
+                    <li><a href="#client-esp32" class="docs-nav__link">ESP32 / Arduino C++</a></li>
+                    <li><a href="#client-python" class="docs-nav__link">Python 3 Client</a></li>
+                    <li><a href="#client-curl" class="docs-nav__link">cURL &amp; PowerShell</a></li>
+                    <li><a href="#error-codes" class="docs-nav__link">HTTP Status &amp; Errors</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="docs-main">
+            <div class="docs-breadcrumbs">
+                <span>Docs</span> &rsaquo; <span>API Reference</span> &rsaquo; <span>v1.0.0</span>
+            </div>
+
+            <h1 class="docs-title">Fragma IoT REST API</h1>
+            <p class="docs-lead">
+                Dokumentasi resmi arsitektur REST API Fragma IoT. Platform ringan tanpa framework untuk menghubungkan mikrokontroler (ESP32, Arduino, Raspberry Pi), menyimpan data sensor, dan menampilkan visualisasi metrik secara asinkron.
+            </p>
+
+            <section class="docs-section" id="introduction">
+                <h2>1. Overview &amp; Arsitektur</h2>
+                <p>
+                    Fragma dirancang dengan prinsip kesederhanaan dan performa tinggi. Komunikasi antar-perangkat dan dashboard memanfaatkan standar HTTP/1.1 REST dengan pertukaran data berformat JSON murni (RFC 8259).
+                </p>
+
+                <div class="docs-callout docs-callout--tip">
+                    <div class="docs-callout__title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        Base URL Lingkungan
+                    </div>
+                    <div class="docs-callout__body">
+                        Saat berjalan di Laragon Apache lokal:<br>
+                        <code>http://fragma.test/api</code> atau <code>http://localhost/fragma/api</code>
+                    </div>
+                </div>
+
+                <h3>Konsep Inti Platform</h3>
+                <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8; font-size: 0.95rem;">
+                    <li><strong>Entity:</strong> Representasi logis dari satu perangkat IoT (memiliki ID unik, nama, API Key terisolasi, dan skema field).</li>
+                    <li><strong>Data Points:</strong> Baris telemetri yang dikirimkan perangkat ke database dengan penanda waktu (*timestamp*).</li>
+                    <li><strong>Widgets:</strong> Elemen visualisasi interaktif pada dashboard (Line Chart, Value Card, Gauge).</li>
+                </ul>
+            </section>
+
+            <section class="docs-section" id="authentication">
+                <h2>2. Autentikasi &amp; Kunci API</h2>
+                <p>
+                    Model autentikasi Fragma bersifat terisolasi per entitas (*per-entity API key*) tanpa keharusan membuat akun login yang rumit untuk perangkat mikrokontroler.
+                </p>
+
+                <div class="docs-callout">
+                    <div class="docs-callout__title">Format Kunci API</div>
+                    <div class="docs-callout__body">
+                        Prefix <code>frag_</code> diikuti oleh 48 karakter heksadesimal acak (dihasilkan melalui fungsi kriptografi aman <code>random_bytes(24)</code>):<br>
+                        <code>frag_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6</code>
+                    </div>
+                </div>
+
+                <p>Kunci API dikirimkan melalui header HTTP <code>X-API-Key</code>:</p>
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>HTTP Header</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>X-API-Key: frag_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6</pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="data-api">
+                <h2>3. Telemetry Ingestion &amp; Query API</h2>
+                <p>Endpoint untuk pengiriman data telemetri dari mikrokontroler serta penarikan data ke antarmuka dashboard.</p>
+
+                <h3>3.1. Push Telemetri Baru</h3>
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--post">POST</span>
+                    <span>/api/data.php?entity_id={entity_id}</span>
+                </div>
+                <p>Menyimpan data pembacaan sensor baru untuk entitas target. Wajib menyertakan header <code>X-API-Key</code>.</p>
+
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Tipe</th>
+                            <th>Posisi</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>entity_id</code></td>
+                            <td><span class="type-pill">integer</span></td>
+                            <td><span class="req-pill">Query</span></td>
+                            <td>ID entitas penerima data.</td>
+                        </tr>
+                        <tr>
+                            <td><code>X-API-Key</code></td>
+                            <td><span class="type-pill">string</span></td>
+                            <td><span class="req-pill">Header</span></td>
+                            <td>Kunci API entitas pemancar.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>Payload Request (JSON)</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>{
+  "temperature": 27.8,
+  "humidity": 62.4,
+  "status": "nominal"
+}</pre>
+                </div>
+
+                <h3>3.2. Query Riwayat Telemetri</h3>
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--get">GET</span>
+                    <span>/api/data.php?entity_id={entity_id}</span>
+                </div>
+                <p>Mengambil kumpulan riwayat telemetri. Bersifat publik untuk dashboard.</p>
+
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter Query</th>
+                            <th>Tipe</th>
+                            <th>Default</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>limit</code></td>
+                            <td><span class="type-pill">integer</span></td>
+                            <td>100</td>
+                            <td>Jumlah data maksimal yang dikembalikan (maks: 500).</td>
+                        </tr>
+                        <tr>
+                            <td><code>range</code></td>
+                            <td><span class="type-pill">string</span></td>
+                            <td>-</td>
+                            <td>Filter rentang waktu (misal: <code>1h</code>, <code>6h</code>, <code>24h</code>, <code>7d</code>).</td>
+                        </tr>
+                        <tr>
+                            <td><code>latest</code></td>
+                            <td><span class="type-pill">integer</span></td>
+                            <td>0</td>
+                            <td>Jika bernilai <code>1</code>, mengembalikan hanya 1 data poin pembacaan paling akhir.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="docs-section" id="entities-api">
+                <h2>4. Entity Management API</h2>
+                <p>Operasi CRUD untuk mengelola instans perangkat IoT.</p>
+
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--get">GET</span>
+                    <span>/api/entities.php</span>
+                </div>
+                <p>Mengambil daftar seluruh entitas yang terdaftar beserta status konektivitasnya.</p>
+
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--post">POST</span>
+                    <span>/api/entities.php</span>
+                </div>
+                <p>Mendaftarkan entitas baru. Body JSON berisi <code>name</code> dan array <code>fields</code>.</p>
+
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>Contoh Body Pembuatan Entitas</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>{
+  "name": "Ruang Server Rack 1",
+  "fields": [
+    { "name": "temperature", "type": "number", "unit": "°C" },
+    { "name": "humidity", "type": "number", "unit": "%" },
+    { "name": "power", "type": "number", "unit": "W" }
+  ]
+}</pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="widgets-api">
+                <h2>5. Visual Widget Configuration API</h2>
+                <p>Mengonfigurasi widget analitik pada visualizer dashboard.</p>
+
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--post">POST</span>
+                    <span>/api/widgets.php?entity_id={entity_id}</span>
+                </div>
+                <p>Membuat widget baru dengan konfigurasi tipe (<code>line-chart</code>, <code>value-card</code>, atau <code>gauge</code>).</p>
+
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>Body Penambahan Widget</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>{
+  "type": "line-chart",
+  "config": {
+    "field": "temperature",
+    "label": "Rack Temperature Sensor",
+    "color": "#4ecdc4",
+    "unit": "°C",
+    "variant": "area"
+  }
+}</pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="simulation-api">
+                <h2>6. Data Simulation API</h2>
+                <p>Menginjeksi telemetri acak secara otomatis ke seluruh entitas yang terdaftar dalam basis data.</p>
+                
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--get">GET</span>
+                    <span>/api/simulate.php</span>
+                </div>
+
+                <div class="api-tester-card">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
+                        Interactive Tester Sandbox: Injeksi Simulasi
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+                        Jalankan endpoint simulasi secara langsung dari peramban Anda untuk menguji respons:
+                    </p>
+                    <div class="api-tester-controls">
+                        <button type="button" class="btn btn--primary btn--sm btn-test-api" data-endpoint="/api/simulate.php" data-output="simOutput">Execute Test</button>
+                    </div>
+                    <pre class="api-tester-output" id="simOutput">// Klik tombol 'Execute Test' untuk menjalankan request live...</pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="pts-bridge-api">
+                <h2>7. PTS Release Candidate: REST API Integration</h2>
+                <p>
+                    Sebagai pemenuhan rilis kandidat PTS, Fragma mengintegrasikan REST API publik live dan Mock Edge Gateway lokal menggunakan Fetch API, JSON, dan async/await.
+                </p>
+
+                <h3>7.1. REST API Publik (Open-Meteo Weather)</h3>
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--get">GET</span>
+                    <span>https://api.open-meteo.com/v1/forecast</span>
+                </div>
+                <p>
+                    Mengambil data atmosfer cuaca live stasiun terdekat tanpa autentikasi (WMO standardized). Digunakan untuk menghitung <strong>Delta HVAC</strong> (perbedaan suhu udara luar terhadap suhu rack server internal Fragma).
+                </p>
+
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>cURL Sintaks</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>curl -s "https://api.open-meteo.com/v1/forecast?latitude=-6.2088&amp;longitude=106.8456&amp;current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,weather_code&amp;timezone=Asia%2FJakarta"</pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="mock-gateway-api">
+                <h2>8. Mock Edge Gateway Cluster API</h2>
+                <p>
+                    Endpoint internal yang mereplikasi klaster sensor industri edge (Node Inflow, Exhaust, UPS Power, dan Chiller Flow). Endpoint ini menyediakan parameter deterministik untuk memvalidasi seluruh transisi state UI.
+                </p>
+
+                <div class="endpoint-banner">
+                    <span class="method-tag method-tag--get">GET</span>
+                    <span>/api/gateway.php[?scenario=:scenario][&amp;delay=:seconds]</span>
+                </div>
+
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter Skenario</th>
+                            <th>Status HTTP</th>
+                            <th>Perilaku &amp; Dampak UI State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>scenario=normal</code></td>
+                            <td><span class="type-pill">200 OK</span></td>
+                            <td>Mengembalikan 4 node telemetri operasional aktif (<strong>Success State</strong>).</td>
+                        </tr>
+                        <tr>
+                            <td><code>scenario=empty</code></td>
+                            <td><span class="type-pill">200 OK</span></td>
+                            <td>Mengembalikan array <code>nodes: []</code> kosong (<strong>Empty State</strong>).</td>
+                        </tr>
+                        <tr>
+                            <td><code>scenario=error</code></td>
+                            <td><span class="req-pill">500 Error</span></td>
+                            <td>Mengembalikan struktur galat <code>GATEWAY_CLUSTER_TIMEOUT</code> (<strong>Error State</strong>).</td>
+                        </tr>
+                        <tr>
+                            <td><code>scenario=delay</code> / <code>delay=2</code></td>
+                            <td><span class="type-pill">200 OK</span></td>
+                            <td>Menambahkan jeda simulasi 2 detik untuk mengamati <strong>Loading State</strong>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="api-tester-card">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
+                        Interactive Tester Sandbox: Mock Edge Gateway
+                    </div>
+                    <div class="api-tester-controls">
+                        <button type="button" class="btn btn--primary btn--sm btn-test-api" data-endpoint="/api/gateway.php?scenario=normal" data-output="gwOutput">Test 200 OK</button>
+                        <button type="button" class="btn btn--ghost btn--sm btn-test-api" data-endpoint="/api/gateway.php?scenario=empty" data-output="gwOutput">Test Empty State</button>
+                        <button type="button" class="btn btn--danger btn--sm btn-test-api" data-endpoint="/api/gateway.php?scenario=error" data-output="gwOutput">Test Error 500</button>
+                    </div>
+                    <pre class="api-tester-output" id="gwOutput">// Klik tombol skenario di atas untuk menguji respons live...</pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="ui-states">
+                <h2>9. UI State Lifecycle Matrix</h2>
+                <p>
+                    Setiap interaksi Fetch asinkron dikelola melalui 4 state visual yang mematuhi prinsip desain *antislop*:
+                </p>
+
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>State Antarmuka</th>
+                            <th>Kondisi Pemicu</th>
+                            <th>Representasi Visual</th>
+                            <th>Aksi Pemulihan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Loading</strong></td>
+                            <td><code>fetch()</code> sedang aktif berjalan.</td>
+                            <td>Skeleton loader beranimasi shimmer, status chip kuning <code>Memuat...</code>.</td>
+                            <td>Otomatis terselesaikan saat Promise selesai.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Success</strong></td>
+                            <td>HTTP 200 dengan payload valid.</td>
+                            <td>Kartu telemetri interaktif, latensi ms, korelasi HVAC, inspeksi Raw JSON.</td>
+                            <td>Tombol 'Sinkronkan REST API' untuk refresh manual.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Empty</strong></td>
+                            <td>HTTP 200 dengan <code>nodes: []</code> kosong.</td>
+                            <td>Kontainer kosong ramah pengguna dengan ikon SVG minimalis (tanpa emoji).</td>
+                            <td>Tombol 'Muat Data Default' &amp; 'Beralih ke Open-Meteo'.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Error</strong></td>
+                            <td>HTTP 500 atau jaringan terputus.</td>
+                            <td>Kontainer merah terukur dengan kode status, blok diagnostik, dan saran tindakan.</td>
+                            <td>Tombol 'Coba Hubungi Kembali (Retry)' &amp; Opsi Fallback.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="docs-section" id="client-esp32">
+                <h2>10. Contoh Integrasi Perangkat</h2>
+
+                <h3>10.1. ESP32 (Arduino C++)</h3>
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>ESP32_Telemetry_Sender.ino</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>#include &lt;WiFi.h&gt;
+#include &lt;HTTPClient.h&gt;
+
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+const char* serverUrl = "http://fragma.test/api/data.php?entity_id=1";
+const char* apiKey = "frag_a1b2c3d4e5f6...";
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+}
+
+void loop() {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-API-Key", apiKey);
+    
+    String payload = "{\"temperature\": 27.4, \"humidity\": 61.2}";
+    int httpResponseCode = http.POST(payload);
+    http.end();
+  }
+  delay(10000);
+}</pre>
+                </div>
+
+                <h3 id="client-python">10.2. Python 3</h3>
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>sensor_push.py</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>import requests
+
+url = "http://fragma.test/api/data.php?entity_id=1"
+headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": "frag_a1b2c3d4e5f6..."
+}
+payload = {
+    "temperature": 26.8,
+    "humidity": 59.5
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.status_code, response.json())</pre>
+                </div>
+
+                <h3 id="client-curl">10.3. cURL &amp; PowerShell</h3>
+                <div class="docs-code">
+                    <div class="docs-code__header">
+                        <span>Terminal cURL</span>
+                        <button type="button" class="docs-code__copy">Copy</button>
+                    </div>
+                    <pre>curl -X POST "http://fragma.test/api/data.php?entity_id=1" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: frag_a1b2c3d4e5f6..." \
+  -d '{"temperature": 26.8, "humidity": 59.5}'</pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="error-codes">
+                <h2>11. HTTP Status &amp; Error Handling</h2>
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Kode Status</th>
+                            <th>Artinya</th>
+                            <th>Deskripsi Penanganan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>200 OK</code></td>
+                            <td>Sukses</td>
+                            <td>Permintaan berhasil diproses dan dikembalikan.</td>
+                        </tr>
+                        <tr>
+                            <td><code>201 Created</code></td>
+                            <td>Berhasil Dibuat</td>
+                            <td>Entitas atau data point baru berhasil tersimpan.</td>
+                        </tr>
+                        <tr>
+                            <td><code>400 Bad Request</code></td>
+                            <td>Payload Tidak Valid</td>
+                            <td>Field wajib hilang atau JSON tidak dapat di-parse.</td>
+                        </tr>
+                        <tr>
+                            <td><code>401 Unauthorized</code></td>
+                            <td>Kunci API Salah</td>
+                            <td>Header <code>X-API-Key</code> tidak sesuai dengan entitas target.</td>
+                        </tr>
+                        <tr>
+                            <td><code>404 Not Found</code></td>
+                            <td>Tidak Ditemukan</td>
+                            <td>Entitas atau widget dengan ID target tidak ada.</td>
+                        </tr>
+                        <tr>
+                            <td><code>500 Server Error</code></td>
+                            <td>Galat Internal</td>
+                            <td>Masalah pada koneksi database atau timeout gateway cluster.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+
+        <aside class="docs-toc">
+            <div class="docs-toc__title">On this page</div>
+            <ul class="docs-toc__list">
+                <li><a href="#introduction" class="docs-toc__link docs-toc__link--active">Overview</a></li>
+                <li><a href="#authentication" class="docs-toc__link">Authentication</a></li>
+                <li><a href="#data-api" class="docs-toc__link">Telemetry API</a></li>
+                <li><a href="#entities-api" class="docs-toc__link">Entities API</a></li>
+                <li><a href="#widgets-api" class="docs-toc__link">Widgets API</a></li>
+                <li><a href="#simulation-api" class="docs-toc__link">Simulation API</a></li>
+                <li><a href="#pts-bridge-api" class="docs-toc__link">PTS Cloud Bridge</a></li>
+                <li><a href="#mock-gateway-api" class="docs-toc__link">Mock Edge Gateway</a></li>
+                <li><a href="#ui-states" class="docs-toc__link">UI State Matrix</a></li>
+                <li><a href="#client-esp32" class="docs-toc__link">Code Examples</a></li>
+                <li><a href="#error-codes" class="docs-toc__link">Error Handling</a></li>
+            </ul>
+        </aside>
+    </div>
+
+    <script src="/js/docs.js"></script>
+</body>
+</html>

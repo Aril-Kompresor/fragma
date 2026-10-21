@@ -18,9 +18,24 @@ function get_api_key_header(): ?string
 
     $headers = function_exists('getallheaders') ? getallheaders() : [];
     foreach ($headers as $key => $value) {
-        if (strcasecmp($key, 'X-API-Key') === 0) {
+        if (strcasecmp($key, 'X-API-Key') === 0 || strcasecmp($key, 'X-Authorization') === 0) {
             return trim((string) $value);
         }
+    }
+
+    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+        $auth = trim((string) $_SERVER['HTTP_AUTHORIZATION']);
+        if (stripos($auth, 'Bearer ') === 0) {
+            return trim(substr($auth, 7));
+        }
+    }
+
+    if (!empty($_GET['api_key'])) {
+        return trim((string) $_GET['api_key']);
+    }
+
+    if (!empty($_GET['token'])) {
+        return trim((string) $_GET['token']);
     }
 
     return null;

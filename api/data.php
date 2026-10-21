@@ -116,12 +116,50 @@ function handle_post(PDO $pdo): void
     }
 
     if ($entityId <= 0) {
-        json_response(400, ['success' => false, 'error' => 'Missing or invalid entity_id']);
+        $candidateKey = get_api_key_header();
+        if ($candidateKey !== null && $candidateKey !== '') {
+            $keyLookupStmt = $pdo->prepare('SELECT id FROM entities WHERE api_key = :api_key LIMIT 1');
+            $keyLookupStmt->execute([':api_key' => $candidateKey]);
+            $foundRow = $keyLookupStmt->fetch();
+            if ($foundRow) {
+                $entityId = (int) $foundRow['id'];
+            }
+        }
+    }
+
+    if ($entityId <= 0) {
+        json_response(400, ['success' => false, 'error' => 'Missing or invalid entity_id or API key']);
     }
 
     require_api_key($pdo, $entityId);
 
-    $body = get_json_input();
+    $rawInput = get_json_input();
+    $body = $rawInput;
+    if (isset($body[0]) && is_array($body[0])) {
+        $body = $body[count($body) - 1];
+    }
+
+    $customTimestamp = null;
+    if (isset($body['ts'])) {
+        $tsVal = (float) $body['ts'];
+        if ($tsVal > 2000000000) {
+            $tsVal = $tsVal / 1000;
+        }
+        $customTimestamp = date('Y-m-d H:i:s', (int) $tsVal);
+        unset($body['ts']);
+    } elseif (isset($body['timestamp'])) {
+        $tsVal = (float) $body['timestamp'];
+        if ($tsVal > 2000000000) {
+            $tsVal = $tsVal / 1000;
+        }
+        $customTimestamp = date('Y-m-d H:i:s', (int) $tsVal);
+        unset($body['timestamp']);
+    }
+
+    if (isset($body['values']) && is_array($body['values'])) {
+        $body = $body['values'];
+    }
+
     unset($body['entity_id']);
 
     if (empty($body)) {
@@ -129,17 +167,26 @@ function handle_post(PDO $pdo): void
     }
 
     $cleanPayload = [];
+    $fieldTypes = [];
+
     foreach ($body as $key => $val) {
         $sanitizedKey = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $key);
         if ($sanitizedKey === '') {
             continue;
         }
+
         if (is_numeric($val)) {
             $cleanPayload[$sanitizedKey] = strpos((string) $val, '.') !== false ? (float) $val : (int) $val;
+            $fieldTypes[$sanitizedKey] = 'number';
         } elseif (is_bool($val)) {
+            $cleanPayload[$sanitizedKey] = (bool) $val;
+            $fieldTypes[$sanitizedKey] = 'boolean';
+        } elseif (is_array($val)) {
             $cleanPayload[$sanitizedKey] = $val;
+            $fieldTypes[$sanitizedKey] = 'json';
         } else {
             $cleanPayload[$sanitizedKey] = (string) $val;
+            $fieldTypes[$sanitizedKey] = 'string';
         }
     }
 
@@ -171,15 +218,9 @@ function handle_post(PDO $pdo): void
 
     foreach ($cleanPayload as $fieldName => $val) {
         if (!isset($existingMap[$fieldName])) {
-            $detectedType = 'string';
-            if (is_numeric($val) || is_int($val) || is_float($val)) {
-                $detectedType = 'number';
-            } elseif (is_bool($val)) {
-                $detectedType = 'boolean';
-            }
             $newField = [
                 'name' => $fieldName,
-                'type' => $detectedType,
+                'type' => $fieldTypes[$fieldName] ?? 'string',
                 'unit' => '',
             ];
             $updatedFields[] = $newField;
@@ -197,7 +238,7 @@ function handle_post(PDO $pdo): void
     }
 
     $jsonPayload = json_encode($cleanPayload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    $recordedAt = date('Y-m-d H:i:s');
+    $recordedAt = $customTimestamp !== null ? $customTimestamp : date('Y-m-d H:i:s');
 
     $stmt = $pdo->prepare('INSERT INTO data_points (entity_id, payload, recorded_at) VALUES (:entity_id, :payload, :recorded_at)');
     $stmt->execute([
