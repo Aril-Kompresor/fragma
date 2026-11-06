@@ -1,8 +1,4 @@
 <?php
-/**
- * REST API endpoint for managing visual widgets attached to entities.
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db.php';
@@ -10,9 +6,6 @@ require_once __DIR__ . '/../includes/response.php';
 
 handle_cors_preflight();
 
-/**
- * Handle GET requests to list all configured widgets for a specific entity.
- */
 function handle_get(PDO $pdo): void
 {
     $entityId = isset($_GET['entity_id']) ? (int) $_GET['entity_id'] : 0;
@@ -47,9 +40,6 @@ function handle_get(PDO $pdo): void
     json_response(200, ['success' => true, 'data' => $widgets]);
 }
 
-/**
- * Handle POST requests to attach a new visual widget to an entity.
- */
 function handle_post(PDO $pdo): void
 {
     $entityId = isset($_GET['entity_id']) ? (int) $_GET['entity_id'] : 0;
@@ -107,9 +97,6 @@ function handle_post(PDO $pdo): void
     ]);
 }
 
-/**
- * Handle PUT requests to update an existing widget's configuration or position.
- */
 function handle_put(PDO $pdo): void
 {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -157,9 +144,6 @@ function handle_put(PDO $pdo): void
     ]);
 }
 
-/**
- * Handle DELETE requests to remove a widget.
- */
 function handle_delete(PDO $pdo): void
 {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;

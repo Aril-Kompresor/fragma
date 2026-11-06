@@ -1,8 +1,4 @@
 <?php
-/**
- * Internal API to inject simulated data points into all entities.
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db.php';

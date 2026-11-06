@@ -1,15 +1,8 @@
 <?php
-/**
- * Database connection setup using PDO with prepared statement defaults.
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/response.php';
 
-/**
- * Load environment variables from a .env file if present.
- */
 function load_env_file(string $path): void
 {
     if (!file_exists($path) || !is_readable($path)) {
@@ -50,9 +43,6 @@ function load_env_file(string $path): void
     }
 }
 
-/**
- * Obtain a shared PDO connection instance for the application database.
- */
 function get_db(): PDO
 {
     static $pdo = null;

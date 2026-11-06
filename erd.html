@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERD - Fragma IoT</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .erd-canvas {
+            position: relative;
+            width: 960px;
+            height: 520px;
+            background: #ffffff;
+        }
+
+        .svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .table-box {
+            position: absolute;
+            background: #ffffff;
+            border: 1.5px solid #000000;
+            z-index: 2;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        #tbl-entities {
+            top: 100px;
+            left: 20px;
+            width: 340px;
+        }
+
+        #tbl-data-points {
+            top: 20px;
+            left: 560px;
+            width: 360px;
+        }
+
+        #tbl-widgets {
+            top: 260px;
+            left: 560px;
+            width: 360px;
+        }
+
+        .table-box__header {
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            border-bottom: 1.5px solid #000000;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-box__body {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-box__body th {
+            text-align: left;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            border-bottom: 1px solid #000000;
+            text-transform: uppercase;
+        }
+
+        .table-box__body td {
+            padding: 5px 10px;
+            border-bottom: 1px dotted #cccccc;
+            font-size: 12px;
+        }
+
+        .table-box__body tr:last-child td {
+            border-bottom: none;
+        }
+
+        .col-key {
+            width: 44px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .col-name {
+            font-weight: 600;
+        }
+
+        .col-type {
+            color: #000000;
+        }
+
+        .col-null {
+            text-align: right;
+            font-size: 11px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+            .erd-canvas {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="erd-canvas" id="erdCanvas">
+        <svg class="svg-layer" id="svgLayer" viewBox="0 0 960 520">
+            <defs>
+                <marker id="crowFoot" viewBox="0 0 16 16" refX="16" refY="8" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                    <line x1="0" y1="8" x2="16" y2="8" stroke="#000000" stroke-width="1.5" />
+                    <line x1="16" y1="2" x2="6" y2="8" stroke="#000000" stroke-width="1.5" />
+                    <line x1="16" y1="14" x2="6" y2="8" stroke="#000000" stroke-width="1.5" />
+                    <line x1="6" y1="2" x2="6" y2="14" stroke="#000000" stroke-width="1.5" />
+                </marker>
+                <marker id="oneBar" viewBox="0 0 16 16" refX="0" refY="8" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                    <line x1="4" y1="2" x2="4" y2="14" stroke="#000000" stroke-width="1.5" />
+                    <line x1="8" y1="2" x2="8" y2="14" stroke="#000000" stroke-width="1.5" />
+                </marker>
+            </defs>
+
+            <path id="lineEntitiesDataPoints" 
+                  d="" 
+                  fill="none" 
+                  stroke="#000000" 
+                  stroke-width="1.5" 
+                  marker-start="url(#oneBar)" 
+                  marker-end="url(#crowFoot)" />
+
+            <path id="lineEntitiesWidgets" 
+                  d="" 
+                  fill="none" 
+                  stroke="#000000" 
+                  stroke-width="1.5" 
+                  marker-start="url(#oneBar)" 
+                  marker-end="url(#crowFoot)" />
+
+            <text id="lblOne1" x="0" y="0" font-size="12" font-family="monospace" font-weight="bold" fill="#000000">1</text>
+            <text id="lblMany1" x="0" y="0" font-size="12" font-family="monospace" font-weight="bold" fill="#000000">N</text>
+            <text id="lblOne2" x="0" y="0" font-size="12" font-family="monospace" font-weight="bold" fill="#000000">1</text>
+            <text id="lblMany2" x="0" y="0" font-size="12" font-family="monospace" font-weight="bold" fill="#000000">N</text>
+        </svg>
+
+        <div class="table-box" id="tbl-entities">
+            <div class="table-box__header">entities</div>
+            <table class="table-box__body">
+                <thead>
+                    <tr>
+                        <th class="col-key">KEY</th>
+                        <th>FIELD</th>
+                        <th>TYPE</th>
+                        <th class="col-null">NULL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="row-entities-id">
+                        <td class="col-key">PK</td>
+                        <td class="col-name">id</td>
+                        <td class="col-type">INT</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">name</td>
+                        <td class="col-type">VARCHAR(255)</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key">UQ</td>
+                        <td class="col-name">api_key</td>
+                        <td class="col-type">VARCHAR(64)</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">fields</td>
+                        <td class="col-type">JSON</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">created_at</td>
+                        <td class="col-type">TIMESTAMP</td>
+                        <td class="col-null">YES</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">updated_at</td>
+                        <td class="col-type">TIMESTAMP</td>
+                        <td class="col-null">YES</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-box" id="tbl-data-points">
+            <div class="table-box__header">data_points</div>
+            <table class="table-box__body">
+                <thead>
+                    <tr>
+                        <th class="col-key">KEY</th>
+                        <th>FIELD</th>
+                        <th>TYPE</th>
+                        <th class="col-null">NULL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="col-key">PK</td>
+                        <td class="col-name">id</td>
+                        <td class="col-type">BIGINT</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr id="row-datapoints-entityid">
+                        <td class="col-key">FK</td>
+                        <td class="col-name">entity_id</td>
+                        <td class="col-type">INT</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">payload</td>
+                        <td class="col-type">JSON</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">recorded_at</td>
+                        <td class="col-type">TIMESTAMP</td>
+                        <td class="col-null">YES</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-box" id="tbl-widgets">
+            <div class="table-box__header">widgets</div>
+            <table class="table-box__body">
+                <thead>
+                    <tr>
+                        <th class="col-key">KEY</th>
+                        <th>FIELD</th>
+                        <th>TYPE</th>
+                        <th class="col-null">NULL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="col-key">PK</td>
+                        <td class="col-name">id</td>
+                        <td class="col-type">INT</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr id="row-widgets-entityid">
+                        <td class="col-key">FK</td>
+                        <td class="col-name">entity_id</td>
+                        <td class="col-type">INT</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">type</td>
+                        <td class="col-type">ENUM</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">config</td>
+                        <td class="col-type">JSON</td>
+                        <td class="col-null">NO</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">position</td>
+                        <td class="col-type">INT</td>
+                        <td class="col-null">YES</td>
+                    </tr>
+                    <tr>
+                        <td class="col-key"></td>
+                        <td class="col-name">created_at</td>
+                        <td class="col-type">TIMESTAMP</td>
+                        <td class="col-null">YES</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function drawConnectors() {
+            const canvas = document.getElementById('erdCanvas');
+            const rowEntities = document.getElementById('row-entities-id');
+            const rowDp = document.getElementById('row-datapoints-entityid');
+            const rowWg = document.getElementById('row-widgets-entityid');
+
+            const pathDp = document.getElementById('lineEntitiesDataPoints');
+            const pathWg = document.getElementById('lineEntitiesWidgets');
+
+            const lblOne1 = document.getElementById('lblOne1');
+            const lblMany1 = document.getElementById('lblMany1');
+            const lblOne2 = document.getElementById('lblOne2');
+            const lblMany2 = document.getElementById('lblMany2');
+
+            if (!canvas || !rowEntities || !rowDp || !rowWg) {
+                return;
+            }
+
+            const canvasRect = canvas.getBoundingClientRect();
+            const rectEntities = rowEntities.getBoundingClientRect();
+            const rectDp = rowDp.getBoundingClientRect();
+            const rectWg = rowWg.getBoundingClientRect();
+
+            const xStart = rectEntities.right - canvasRect.left;
+            const yStart = rectEntities.top + (rectEntities.height / 2) - canvasRect.top;
+
+            const xEndDp = rectDp.left - canvasRect.left;
+            const yEndDp = rectDp.top + (rectDp.height / 2) - canvasRect.top;
+
+            const xEndWg = rectWg.left - canvasRect.left;
+            const yEndWg = rectWg.top + (rectWg.height / 2) - canvasRect.top;
+
+            const xMid = xStart + ((xEndDp - xStart) / 2);
+
+            pathDp.setAttribute('d', `M ${xStart} ${yStart} L ${xMid} ${yStart} L ${xMid} ${yEndDp} L ${xEndDp} ${yEndDp}`);
+            pathWg.setAttribute('d', `M ${xStart} ${yStart} L ${xMid} ${yStart} L ${xMid} ${yEndWg} L ${xEndWg} ${yEndWg}`);
+
+            lblOne1.setAttribute('x', xStart + 12);
+            lblOne1.setAttribute('y', yStart - 6);
+
+            lblMany1.setAttribute('x', xEndDp - 22);
+            lblMany1.setAttribute('y', yEndDp - 6);
+
+            lblOne2.setAttribute('x', xStart + 12);
+            lblOne2.setAttribute('y', yStart + 16);
+
+            lblMany2.setAttribute('x', xEndWg - 22);
+            lblMany2.setAttribute('y', yEndWg - 6);
+        }
+
+        window.addEventListener('load', drawConnectors);
+        window.addEventListener('resize', drawConnectors);
+    </script>
+</body>
+</html>

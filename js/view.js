@@ -1,24 +1,13 @@
-/**
- * Global View page controller.
- * Fetches widgets across all entities and renders them in a unified dashboard.
- */
-
 let allEntities = [];
 let allWidgets = [];
 let entityDataCache = {};
 let viewPollingIntervalId = null;
 let selectedVariant = null;
 
-/**
- * Initialize view page upon DOM ready.
- */
 document.addEventListener('DOMContentLoaded', () => {
     initViewPage();
 });
 
-/**
- * Mount handlers and initiate global view loading and polling.
- */
 function initViewPage() {
     setupAddVisualForm();
     loadGlobalView();
@@ -35,9 +24,6 @@ function initViewPage() {
     });
 }
 
-/**
- * Load all entities and widgets then render the canvas.
- */
 async function loadGlobalView() {
     try {
         const entitiesReq = apiFetch('/entities.php');
@@ -55,9 +41,6 @@ async function loadGlobalView() {
     }
 }
 
-/**
- * Periodically refresh widgets and data points.
- */
 async function refreshGlobalView() {
     try {
         const widgets = await apiFetch('/widgets.php');
@@ -69,9 +52,6 @@ async function refreshGlobalView() {
     }
 }
 
-/**
- * Fetch telemetry data points for all entities that have active widgets.
- */
 async function fetchAllNeededData() {
     const neededEntityIds = [...new Set(allWidgets.map(w => w.entity_id))];
     
@@ -87,9 +67,6 @@ async function fetchAllNeededData() {
     await Promise.all(fetchPromises);
 }
 
-/**
- * Render all widgets on the drag-and-drop global canvas.
- */
 function renderGlobalWidgets() {
     const container = document.getElementById('globalWidgetsGrid');
     const loading = document.getElementById('globalWidgetsLoading');
@@ -183,9 +160,6 @@ function renderGlobalWidgets() {
     });
 }
 
-/**
- * Configure wizard modal controls and multi-step widget configuration form.
- */
 function setupAddVisualForm() {
     const form = document.getElementById('addVisualForm');
     const entitySelect = document.getElementById('visualEntitySelect');
@@ -363,9 +337,6 @@ function setupAddVisualForm() {
     }
 }
 
-/**
- * Populate entity options in the visual configuration dropdown.
- */
 function populateEntitySelect() {
     const select = document.getElementById('visualEntitySelect');
     if (!select) return;
@@ -379,9 +350,6 @@ function populateEntitySelect() {
     });
 }
 
-/**
- * Populate field options for the selected entity.
- */
 function populateFieldSelect(entityId) {
     const select = document.getElementById('visualFieldSelect');
     if (!select) return;
@@ -405,9 +373,6 @@ function populateFieldSelect(entityId) {
     });
 }
 
-/**
- * Handle submission of new visual widget configuration.
- */
 async function handleAddVisualSubmit(e) {
     e.preventDefault();
     const entityId = document.getElementById('visualEntitySelect').value;
@@ -466,9 +431,6 @@ async function handleAddVisualSubmit(e) {
     }
 }
 
-/**
- * Remove an existing widget from the global view canvas.
- */
 async function removeGlobalWidget(widgetId) {
     if (!confirm('Remove this visual from the dashboard?')) return;
 

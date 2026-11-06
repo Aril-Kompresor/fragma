@@ -1,8 +1,4 @@
 <?php
-/**
- * REST API endpoint for pushing and querying IoT time-series data points.
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db.php';
@@ -11,9 +7,6 @@ require_once __DIR__ . '/../includes/auth.php';
 
 handle_cors_preflight();
 
-/**
- * Handle GET requests to query data points for an entity with optional limit, range, or latest filter.
- */
 function handle_get(PDO $pdo): void
 {
     $entityId = isset($_GET['entity_id']) ? (int) $_GET['entity_id'] : 0;
@@ -102,9 +95,6 @@ function handle_get(PDO $pdo): void
     json_response(200, ['success' => true, 'data' => $data]);
 }
 
-/**
- * Handle POST requests from IoT devices to record incoming data points and auto-detect schema fields.
- */
 function handle_post(PDO $pdo): void
 {
     $entityId = isset($_GET['entity_id']) ? (int) $_GET['entity_id'] : 0;

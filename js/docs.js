@@ -1,15 +1,7 @@
-/**
- * GitBook-style interactive documentation controller for Fragma IoT.
- * Handles code copying, live search filtering, TOC scrollspy, and interactive API testing.
- */
-
 document.addEventListener('DOMContentLoaded', () => {
     initDocs();
 });
 
-/**
- * Initialize all documentation components and event listeners.
- */
 function initDocs() {
     setupCodeCopyButtons();
     setupSearchFilter();
@@ -18,9 +10,6 @@ function initDocs() {
     setupApiPlayground();
 }
 
-/**
- * Enable one-click clipboard copying on all code blocks.
- */
 function setupCodeCopyButtons() {
     const copyButtons = document.querySelectorAll('.docs-code__copy');
     copyButtons.forEach(btn => {
@@ -44,9 +33,6 @@ function setupCodeCopyButtons() {
     });
 }
 
-/**
- * Enable live instant search filtering across docs navigation links and sections.
- */
 function setupSearchFilter() {
     const searchInput = document.getElementById('docsSearchInput');
     if (!searchInput) return;
@@ -84,9 +70,6 @@ function setupSearchFilter() {
     });
 }
 
-/**
- * Track user scroll position and highlight active headings in TOC and sidebar.
- */
 function setupScrollSpy() {
     const sections = document.querySelectorAll('.docs-section');
     const tocLinks = document.querySelectorAll('.docs-toc__link');
@@ -124,9 +107,6 @@ function setupScrollSpy() {
     window.addEventListener('scroll', onScroll, { passive: true });
 }
 
-/**
- * Handle mobile drawer menu opening, closing, and backdrop dismissal.
- */
 function setupMobileDrawer() {
     const btn = document.getElementById('mobileMenuBtn');
     const nav = document.getElementById('docsNav');
@@ -144,9 +124,6 @@ function setupMobileDrawer() {
     });
 }
 
-/**
- * Bind interactive API playground sandbox buttons for direct endpoint testing.
- */
 function setupApiPlayground() {
     const testButtons = document.querySelectorAll('.btn-test-api');
     testButtons.forEach(btn => {

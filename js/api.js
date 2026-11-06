@@ -1,12 +1,5 @@
-/**
- * Centralized fetch wrapper for Fragma REST API requests.
- */
-
 const API_BASE = '/api';
 
-/**
- * Execute an HTTP request against the Fragma API and parse the JSON response.
- */
 async function apiFetch(endpoint, options = {}) {
     const defaultHeaders = {
         'Accept': 'application/json',

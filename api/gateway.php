@@ -1,9 +1,4 @@
 <?php
-/**
- * Mock REST API endpoint representing an industrial IoT Edge Gateway cluster.
- * Provides configurable response states for testing loading, empty, and error conditions.
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/response.php';

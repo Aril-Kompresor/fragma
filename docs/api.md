@@ -66,10 +66,7 @@ Invoke-RestMethod -Uri "http://fragma.test/api/data.php?entity_id=1" -Method POS
 
 **Linux / macOS (Bash)**:
 ```bash
-curl -X POST "http://fragma.test/api/data.php?entity_id=1" \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: your_key" \
-  -d '{"temperature": 27.8, "humidity": 62.4}'
+curl -X POST "http://fragma.test/api/data.php?entity_id=1" -H "Content-Type: application/json" -H "X-API-Key: your_key" -d '{"temperature": 27.8, "humidity": 62.4}'
 ```
 
 #### Response (`201 Created`)
@@ -178,10 +175,7 @@ DELETE /api/widgets.php?id={widget_id}
 
 ### cURL
 ```bash
-curl -X POST "http://fragma.test/api/data.php?entity_id=1" \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -d '{"temperature": 26.4, "humidity": 58.0}'
+curl -X POST "http://fragma.test/api/data.php?entity_id=1" -H "Content-Type: application/json" -H "X-API-Key: YOUR_API_KEY" -d '{"temperature": 26.4, "humidity": 58.0}'
 ```
 
 ### Python 3

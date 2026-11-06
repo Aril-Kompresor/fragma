@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Device: Fragma IoT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261021d">
+    <script> </script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <span class="navbar__logo-dot"></span>
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <span class="navbar__logo-dot"></span>
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav">
+                <a href="/view/index.html" class="sidebar__link" id="navView">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>View</span>
+                </a>
+                <a href="/dashboard/index.html" class="sidebar__link sidebar__link--active" id="navEntity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>Devices</span>
+                </a>
+                <a href="/simulation/index.html" class="sidebar__link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    </svg>
+                    <span>Simulation</span>
+                </a>
+                <a href="/docs/index.html" class="sidebar__link sidebar__link--bottom">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    <span>API Docs</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="tb-top-bar">
+                <div class="tb-breadcrumbs">
+                    <a href="/dashboard/index.html" class="tb-breadcrumb-item">Devices</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <span class="tb-breadcrumb-item tb-breadcrumb-item--active">Add device</span>
+                </div>
+                <div>
+                    <a href="/dashboard/index.html" class="btn btn--ghost btn--sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <span>Devices List</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="container tb-container" style="padding-top: 24px;">
+                <section id="createFormSection">
+                    <div class="page-header"
+                        style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <div style="margin-bottom: 6px;">
+                                <h1 class="page-header__title" style="margin: 0; font-size: 1.5rem;">Add New Device</h1>
+                            </div>
+                            <p class="page-header__subtitle"
+                                style="margin: 0; font-size: 0.88rem; color: var(--text-secondary);">
+                                Register a new IoT device and provision telemetry credentials.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <a href="/dashboard/index.html" class="btn btn--ghost">Cancel</a>
+                            <button type="button" id="headerSubmitCreateBtn" class="btn btn--primary">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Add Device</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="formValidationSummary" class="form-summary form-summary--hidden" role="alert"
+                        aria-live="assertive" tabindex="-1"></div>
+
+                    <form id="createEntityForm" novalidate>
+                        <div class="card" style="margin-bottom: 24px;">
+                            <div class="tb-section-header">
+                                <span class="tb-section-title">Device details</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);"><span
+                                        class="form-required">*</span> Required fields</span>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label class="form-label" for="entityNameInput">
+                                    Device Name <span class="form-required" aria-hidden="true">*</span>
+                                </label>
+                                <input type="text" id="entityNameInput" class="form-input"
+                                    placeholder="e.g. DHT22 Sensor Node" aria-required="true" aria-invalid="false"
+                                    aria-describedby="entityNameError" autocomplete="off">
+                                <div id="entityNameError" class="form-error" role="alert" aria-live="polite"></div>
+                            </div>
+
+                            <div class="tb-field-row" style="margin-bottom: 0;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" for="entityProfileInput">Device Profile</label>
+                                    <input type="text" id="entityProfileInput" class="form-input" value="default"
+                                        readonly style="opacity: 0.85; cursor: default; background: var(--bg-input);">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <div class="form-label-row">
+                                        <label class="form-label" for="entityNotesInput">Label / Location</label>
+                                        <span id="entityNotesCounter" class="form-counter" aria-live="polite">0 /
+                                            150</span>
+                                    </div>
+                                    <input type="text" id="entityNotesInput" class="form-input" maxlength="150"
+                                        placeholder="e.g. Office Shelf B or Server Rack 4" aria-invalid="false"
+                                        aria-describedby="entityNotesError">
+                                    <div id="entityNotesError" class="form-error" role="alert" aria-live="polite"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-bottom: 24px;">
+                            <div class="tb-section-header">
+                                <span class="tb-section-title">Protocol</span>
+                            </div>
+
+                            <div class="form-group" style="max-width: 520px; margin-bottom: 18px;">
+                                <label class="form-label" for="transportTypeSelect">
+                                    Communication Protocol
+                                </label>
+                                <div style="position: relative;">
+                                    <select id="transportTypeSelect" class="form-select" disabled
+                                        style="padding-left: 38px; opacity: 0.95; cursor: default; background: var(--bg-input);">
+                                        <option value="http" selected>HTTP / HTTPS</option>
+                                        <option value="mqtt" disabled>MQTT / MQTTS</option>
+                                        <option value="coap" disabled>CoAP</option>
+                                        <option value="lwm2m" disabled>LwM2M /</option>
+                                    </select>
+                                    <span
+                                        style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--accent); pointer-events: none;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="tb-transport-grid">
+                                <div class="tb-transport-card tb-transport-card--active">
+                                    <div>
+                                        <div class="tb-transport-card__header">
+                                            <div class="tb-transport-card__title-wrap">
+                                                <span class="tb-transport-card__icon">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                                        <path
+                                                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                                                        </path>
+                                                    </svg>
+                                                </span>
+                                                <div>
+                                                    <h3 class="tb-transport-card__title">HTTP / HTTPS</h3>
+                                                    <div style="font-size: 0.72rem; color: var(--text-secondary);">REST
+                                                        API Ingestion</div>
+                                                </div>
+                                            </div>
+                                            <span class="tb-transport-card__badge tb-transport-card__badge--active">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2.5">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                                </svg>
+                                                Active (Locked)
+                                            </span>
+                                        </div>
+                                        <p class="tb-transport-card__desc" style="margin-top: 12px; margin-bottom: 0;">
+                                            Direct JSON telemetry push via POST requests with X-API-Key header.
+                                            Compatible with ESP32, Arduino, Raspberry Pi, Python, and cURL.
+                                        </p>
+                                    </div>
+                                    <div class="tb-transport-card__specs">
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Protocol:</span>
+                                            <span class="tb-transport-card__spec-value">HTTP/1.1 &amp; HTTPS</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Ports:</span>
+                                            <span class="tb-transport-card__spec-value">80 (HTTP) / 443 (HTTPS)</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Method:</span>
+                                            <span class="tb-transport-card__spec-value">POST /api/data.php</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tb-transport-card tb-transport-card--locked">
+                                    <div>
+                                        <div class="tb-transport-card__header">
+                                            <div class="tb-transport-card__title-wrap">
+                                                <span class="tb-transport-card__icon">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                                                        <rect x="9" y="9" width="6" height="6"></rect>
+                                                        <line x1="9" y1="1" x2="9" y2="4"></line>
+                                                        <line x1="15" y1="1" x2="15" y2="4"></line>
+                                                        <line x1="9" y1="20" x2="9" y2="23"></line>
+                                                        <line x1="15" y1="20" x2="15" y2="23"></line>
+                                                        <line x1="20" y1="9" x2="23" y2="9"></line>
+                                                        <line x1="20" y1="14" x2="23" y2="14"></line>
+                                                        <line x1="1" y1="9" x2="4" y2="9"></line>
+                                                        <line x1="1" y1="14" x2="4" y2="14"></line>
+                                                    </svg>
+                                                </span>
+                                                <div>
+                                                    <h3 class="tb-transport-card__title">MQTT / MQTTS</h3>
+                                                    <div style="font-size: 0.72rem; color: var(--text-muted);">Broker
+                                                        Telemetry</div>
+                                                </div>
+                                            </div>
+                                            <span class="tb-transport-card__badge tb-transport-card__badge--locked">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2.5">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                                </svg>
+                                                Locked
+                                            </span>
+                                        </div>
+                                        <p class="tb-transport-card__desc" style="margin-top: 12px; margin-bottom: 0;">
+                                            Lightweight publish/subscribe broker ingestion for high-frequency sensor
+                                            streams.
+                                        </p>
+                                    </div>
+                                    <div class="tb-transport-card__specs">
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Protocol:</span>
+                                            <span class="tb-transport-card__spec-value">MQTT 3.1.1 / 5.0</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Ports:</span>
+                                            <span class="tb-transport-card__spec-value">1883 / 8883</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Status:</span>
+                                            <span class="tb-transport-card__spec-value"
+                                                style="color: var(--text-muted);">Coming Soon</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tb-transport-card tb-transport-card--locked">
+                                    <div>
+                                        <div class="tb-transport-card__header">
+                                            <div class="tb-transport-card__title-wrap">
+                                                <span class="tb-transport-card__icon">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                                                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                                                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                                                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                                                    </svg>
+                                                </span>
+                                                <div>
+                                                    <h3 class="tb-transport-card__title">CoAP</h3>
+                                                    <div style="font-size: 0.72rem; color: var(--text-muted);">
+                                                        Constrained UDP</div>
+                                                </div>
+                                            </div>
+                                            <span class="tb-transport-card__badge tb-transport-card__badge--locked">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2.5">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                                </svg>
+                                                Locked
+                                            </span>
+                                        </div>
+                                        <p class="tb-transport-card__desc" style="margin-top: 12px; margin-bottom: 0;">
+                                            Constrained Application Protocol over UDP for battery-powered nodes.
+                                        </p>
+                                    </div>
+                                    <div class="tb-transport-card__specs">
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Protocol:</span>
+                                            <span class="tb-transport-card__spec-value">RFC 7252</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Ports:</span>
+                                            <span class="tb-transport-card__spec-value">5683 / 5684</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Status:</span>
+                                            <span class="tb-transport-card__spec-value"
+                                                style="color: var(--text-muted);">Coming Soon</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </section>
+
+                <section id="createSuccessSection" style="display: none;">
+                    <div class="page-header" style="margin-bottom: 24px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                                <span
+                                    style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(46, 204, 113, 0.15); color: var(--success);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </span>
+                                <h1 class="page-header__title"
+                                    style="margin: 0; font-size: 1.5rem; color: var(--success);">Device Registered
+                                    Successfully!</h1>
+                            </div>
+                            <p class="page-header__subtitle"
+                                style="margin: 0; font-size: 0.88rem; color: var(--text-secondary);">
+                                Your new IoT entity has been provisioned on HTTP/HTTPS and is ready to stream telemetry.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="tb-section-header">
+                            <span class="tb-section-title">Device Credentials</span>
+                            <span class="tb-state-badge tb-state-badge--active">Ready to Stream</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <div class="form-label">Device Name</div>
+                            <div id="createdDeviceName"
+                                style="font-size: 1.15rem; font-weight: 600; color: var(--text-primary);"></div>
+                        </div>
+                        <div>
+                            <div class="form-label">API Key (X-API-Key)</div>
+                            <div class="code-block"
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span id="createdApiKeyDisplay"
+                                    style="font-size: 0.88rem; word-break: break-all; color: var(--accent);">frag_...</span>
+                                <button type="button" id="copyCreatedKeyBtn" class="code-copy-btn">Copy Key</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="tb-section-header">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="tb-section-title">Push Telemetry via HTTP / HTTPS</span>
+                                <span class="tb-transport-card__badge tb-transport-card__badge--active">cURL
+                                    Snippet</span>
+                            </div>
+                            <button type="button" id="copyCurlBtn" class="btn btn--ghost btn--sm"
+                                style="height: 28px; min-height: 28px; padding: 0 10px; font-size: 0.75rem;">Copy
+                                cURL</button>
+                        </div>
+                        <div class="tb-code-box" id="createdCurlSnippet" style="margin-bottom: 0;"></div>
+                    </div>
+
+                    <div class="card"
+                        style="padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <button type="button" id="createAnotherBtn" class="btn btn--ghost">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Add Another Device</span>
+                        </button>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <a href="/dashboard/index.html" class="btn btn--ghost">Back to Devices List</a>
+                            <a id="goToEntityLink" href="/entity/index.html" class="btn btn--primary">View Device
+                                Page</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/utils.js?v=20261021d"></script>
+    <script src="/js/api.js?v=20261021d"></script>
+    <script src="/js/create.js?v=20261021d"></script>
+</body>
+
+</html>

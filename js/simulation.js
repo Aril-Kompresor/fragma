@@ -1,7 +1,3 @@
-/**
- * Simulation Engine Controller
- */
-
 let simulationTimer = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,7 +24,6 @@ function appendLog(message, isError = false) {
     div.textContent = `[${time}] ${message}`;
     logBox.appendChild(div);
     
-    // Auto scroll to bottom
     logBox.scrollTop = logBox.scrollHeight;
 }
 
@@ -64,7 +59,6 @@ function startSimulation() {
     
     appendLog(`[SYSTEM] Starting simulation engine every ${intervalSecs} seconds...`);
     
-    // Run once immediately
     runSimulationTick();
     
     simulationTimer = setInterval(runSimulationTick, intervalMs);

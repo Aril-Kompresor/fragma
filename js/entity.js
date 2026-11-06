@@ -1,22 +1,12 @@
-/**
- * Entity detail page controller managing field auto-detection, telemetry streaming, and connection instructions.
- */
-
 let currentEntityId = 0;
 let currentEntity = null;
 let currentDataPoints = [];
 let entityPollingIntervalId = null;
 
-/**
- * Initialize entity page upon DOM ready.
- */
 document.addEventListener('DOMContentLoaded', () => {
     initEntityPage();
 });
 
-/**
- * Parse URL query parameters, mount handlers, and initialize data loading.
- */
 function initEntityPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
@@ -50,9 +40,6 @@ function initEntityPage() {
     });
 }
 
-/**
- * Fetch entity metadata and initiate data points rendering.
- */
 async function loadEntityDetails() {
     try {
         const entity = await apiFetch(`/entities.php?id=${currentEntityId}`);
@@ -68,9 +55,8 @@ async function loadEntityDetails() {
     }
 }
 
-/**
- * Render entity title, metadata, API key display, detection banner, and field tags.
- */
+let activeSnippetTab = 'curl';
+
 function renderEntityHeader(entity) {
     const titleEl = document.getElementById('entityTitle');
     const createdEl = document.getElementById('entityCreatedDate');
@@ -79,13 +65,19 @@ function renderEntityHeader(entity) {
     const fieldsListEl = document.getElementById('entityFieldsList');
     const redetectBtn = document.getElementById('redetectFieldsBtn');
     const detectionCard = document.getElementById('fieldDetectionCard');
-    const detectEndpointEl = document.getElementById('detectEndpointDisplay');
-    const detectTokenEl = document.getElementById('detectTokenDisplay');
-    const copyEndpointBtn = document.getElementById('copyEndpointBtn');
-    const copyTokenBtn = document.getElementById('copyTokenBtn');
+    const breadcrumbEl = document.getElementById('breadcrumbEntityName');
+    const stateBadge = document.getElementById('entityStateBadge');
 
     if (titleEl) titleEl.textContent = entity.name;
+    if (breadcrumbEl) breadcrumbEl.textContent = entity.name;
     if (createdEl) createdEl.textContent = `Created ${formatDateTime(entity.created_at)}`;
+
+    if (stateBadge) {
+        stateBadge.style.display = 'inline-flex';
+        const isRecent = entity.last_data_at && (new Date() - new Date(entity.last_data_at.replace(' ', 'T') + 'Z') < 120000);
+        stateBadge.className = isRecent ? 'tb-state-badge tb-state-badge--active' : 'tb-state-badge tb-state-badge--inactive';
+        stateBadge.textContent = isRecent ? 'Active' : 'Inactive';
+    }
 
     const storedKey = getLocalApiKey(entity.id);
     const displayKey = storedKey ? storedKey : entity.api_key_masked;
@@ -101,38 +93,11 @@ function renderEntityHeader(entity) {
                     keyToCopy = entered.trim();
                     saveLocalApiKey(entity.id, keyToCopy);
                     if (apiKeyEl) apiKeyEl.textContent = keyToCopy;
-                    if (detectTokenEl) detectTokenEl.textContent = keyToCopy;
                 } else {
                     keyToCopy = entity.api_key_masked;
                 }
             }
             copyToClipboard(keyToCopy, copyKeyBtn);
-        };
-    }
-
-    const endpointUrl = `${window.location.origin}/api/data.php?entity_id=${entity.id}`;
-    if (detectEndpointEl) detectEndpointEl.textContent = `POST ${endpointUrl}`;
-    if (detectTokenEl) detectTokenEl.textContent = displayKey;
-
-    if (copyEndpointBtn) {
-        copyEndpointBtn.onclick = () => copyToClipboard(endpointUrl, copyEndpointBtn);
-    }
-
-    if (copyTokenBtn) {
-        copyTokenBtn.onclick = () => {
-            let tokenToCopy = storedKey;
-            if (!tokenToCopy) {
-                const entered = prompt('Full API key is not stored locally in this browser. Enter full API key to save and copy (or leave empty to copy masked key):');
-                if (entered && entered.trim()) {
-                    tokenToCopy = entered.trim();
-                    saveLocalApiKey(entity.id, tokenToCopy);
-                    if (apiKeyEl) apiKeyEl.textContent = tokenToCopy;
-                    if (detectTokenEl) detectTokenEl.textContent = tokenToCopy;
-                } else {
-                    tokenToCopy = entity.api_key_masked;
-                }
-            }
-            copyToClipboard(tokenToCopy, copyTokenBtn);
         };
     }
 
@@ -168,15 +133,12 @@ function renderEntityHeader(entity) {
     }
 }
 
-/**
- * Render ESP32 C++ and curl sample code snippets for sending data based on selected platform.
- */
 function renderConnectionSnippets(entity) {
-    const curlEl = document.getElementById('curlSnippetCode');
-    const espEl = document.getElementById('esp32SnippetCode');
-    const copyCurlBtn = document.getElementById('copyCurlBtn');
-    const copyEspBtn = document.getElementById('copyEspBtn');
-    const platformSelect = document.getElementById('curlPlatformSelect');
+    const activeCodeEl = document.getElementById('activeSnippetCode');
+    const copySnippetBtn = document.getElementById('copyActiveSnippetBtn');
+    const tabCurl = document.getElementById('tabSnippetCurl');
+    const tabEsp32 = document.getElementById('tabSnippetEsp32');
+    const tabPython = document.getElementById('tabSnippetPython');
 
     const origin = window.location.origin;
     const storedKey = getLocalApiKey(entity.id) || 'YOUR_API_KEY';
@@ -191,70 +153,48 @@ function renderConnectionSnippets(entity) {
         samplePayload['humidity'] = 62.0;
     }
 
-    const payloadJsonStr = JSON.stringify(samplePayload);
+    const inlineJson = JSON.stringify(samplePayload);
 
-    function getCurlCommand(platform) {
-        if (platform === 'cmd') {
-            const escapedJson = payloadJsonStr.replace(/"/g, '\\"');
-            return `curl -X POST "${origin}/api/data.php?entity_id=${entity.id}" -H "Content-Type: application/json" -H "X-API-Key: ${storedKey}" -d "${escapedJson}"`;
-        }
-        if (platform === 'ps') {
-            return `Invoke-RestMethod -Uri "${origin}/api/data.php?entity_id=${entity.id}" -Method POST -Headers @{ "X-API-Key" = "${storedKey}" } -ContentType "application/json" -Body '${payloadJsonStr}'`;
-        }
-        return `curl -X POST "${origin}/api/data.php?entity_id=${entity.id}" \\\n  -H "Content-Type: application/json" \\\n  -H "X-API-Key: ${storedKey}" \\\n  -d '${payloadJsonStr}'`;
-    }
+    const snippets = {
+        curl: `curl -X POST "${origin}/api/data.php?entity_id=${entity.id}" -H "Content-Type: application/json" -H "X-API-Key: ${storedKey}" -d '${inlineJson}'`,
+        esp32: `#include <WiFi.h>\n#include <HTTPClient.h>\n\nconst char* ssid = "YOUR_WIFI_SSID";\nconst char* password = "YOUR_WIFI_PASSWORD";\nconst char* serverUrl = "${origin}/api/data.php?entity_id=${entity.id}";\nconst char* apiKey = "${storedKey}";\n\nvoid setup() {\n  Serial.begin(115200);\n  WiFi.begin(ssid, password);\n  while (WiFi.status() != WL_CONNECTED) { delay(500); }\n}\n\nvoid loop() {\n  if (WiFi.status() == WL_CONNECTED) {\n    HTTPClient http;\n    http.begin(serverUrl);\n    http.addHeader("Content-Type", "application/json");\n    http.addHeader("X-API-Key", apiKey);\n    \n    String payload = "${inlineJson.replace(/"/g, '\\"')}";\n    int httpResponseCode = http.POST(payload);\n    http.end();\n  }\n  delay(10000);\n}`,
+        python: `import requests\n\nurl = "${origin}/api/data.php?entity_id=${entity.id}"\nheaders = {\n    "Content-Type": "application/json",\n    "X-API-Key": "${storedKey}"\n}\npayload = ${JSON.stringify(samplePayload, null, 4)}\n\nresponse = requests.post(url, json=payload, headers=headers)\nprint(response.status_code, response.json())`
+    };
 
-    if (platformSelect) {
-        platformSelect.onchange = () => {
-            if (curlEl) curlEl.textContent = getCurlCommand(platformSelect.value);
+    const updateSnippetView = () => {
+        if (activeCodeEl) activeCodeEl.textContent = snippets[activeSnippetTab] || snippets.curl;
+        [tabCurl, tabEsp32, tabPython].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('code-tab-btn--active');
+                btn.setAttribute('aria-selected', 'false');
+            }
+        });
+        if (activeSnippetTab === 'curl' && tabCurl) {
+            tabCurl.classList.add('code-tab-btn--active');
+            tabCurl.setAttribute('aria-selected', 'true');
+        } else if (activeSnippetTab === 'esp32' && tabEsp32) {
+            tabEsp32.classList.add('code-tab-btn--active');
+            tabEsp32.setAttribute('aria-selected', 'true');
+        } else if (activeSnippetTab === 'python' && tabPython) {
+            tabPython.classList.add('code-tab-btn--active');
+            tabPython.setAttribute('aria-selected', 'true');
+        }
+    };
+
+    if (tabCurl) tabCurl.onclick = () => { activeSnippetTab = 'curl'; updateSnippetView(); };
+    if (tabEsp32) tabEsp32.onclick = () => { activeSnippetTab = 'esp32'; updateSnippetView(); };
+    if (tabPython) tabPython.onclick = () => { activeSnippetTab = 'python'; updateSnippetView(); };
+
+    if (copySnippetBtn) {
+        copySnippetBtn.onclick = () => {
+            const codeToCopy = snippets[activeSnippetTab] || snippets.curl;
+            copyToClipboard(codeToCopy, copySnippetBtn);
         };
     }
 
-    const selectedPlatform = platformSelect ? platformSelect.value : 'cmd';
-    if (curlEl) curlEl.textContent = getCurlCommand(selectedPlatform);
-
-    const espSnippet = `#include <WiFi.h>
-#include <HTTPClient.h>
-
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* serverUrl = "${origin}/api/data.php?entity_id=${entity.id}";
-const char* apiKey = "${storedKey}";
-
-void setup() {
-  Serial.begin(115200);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) { delay(500); }
+    updateSnippetView();
 }
 
-void loop() {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(serverUrl);
-    http.addHeader("Content-Type", "application/json");
-    http.addHeader("X-API-Key", apiKey);
-    
-    String payload = "${payloadJsonStr.replace(/"/g, '\\"')}";
-    int httpResponseCode = http.POST(payload);
-    http.end();
-  }
-  delay(10000);
-}`;
-
-    if (espEl) espEl.textContent = espSnippet;
-
-    if (copyCurlBtn) {
-        copyCurlBtn.onclick = () => {
-            const currentPlatform = platformSelect ? platformSelect.value : 'cmd';
-            copyToClipboard(getCurlCommand(currentPlatform), copyCurlBtn);
-        };
-    }
-    if (copyEspBtn) copyEspBtn.onclick = () => copyToClipboard(espSnippet, copyEspBtn);
-}
-
-/**
- * Configure the in-browser test sender form to submit test payload and detect fields immediately.
- */
 function setupInlineTester() {
     const form = document.getElementById('inlineTesterForm');
     const input = document.getElementById('testerPayloadInput');
@@ -315,9 +255,6 @@ function setupInlineTester() {
     };
 }
 
-/**
- * Reset entity fields to re-enter detection mode for new schema configurations.
- */
 async function handleRedetectFields() {
     if (!confirm('Reset detected fields? The entity will enter detection mode until a new payload is received.')) {
         return;
@@ -351,9 +288,6 @@ async function handleRedetectFields() {
     }
 }
 
-/**
- * Fetch recent time-series data points recorded for this entity.
- */
 async function loadDataPoints() {
     try {
         const data = await apiFetch(`/data.php?entity_id=${currentEntityId}&limit=50`);
@@ -363,9 +297,6 @@ async function loadDataPoints() {
     }
 }
 
-/**
- * Perform periodic polling refresh of telemetry data and entity status.
- */
 async function refreshData() {
     if (!currentEntity || !Array.isArray(currentEntity.fields) || currentEntity.fields.length === 0) {
         try {
@@ -383,9 +314,6 @@ async function refreshData() {
     renderDataTable();
 }
 
-/**
- * Render raw telemetry table rows showing timestamps, structured payload chips, and copy actions.
- */
 function renderDataTable() {
     const tbody = document.getElementById('dataTableBody');
     const tableEl = document.getElementById('telemetryDataTable');
@@ -393,12 +321,41 @@ function renderDataTable() {
     const countBadge = document.getElementById('streamCountBadge');
     if (!tbody) return;
 
-    if (countBadge) {
-        const len = currentDataPoints.length;
-        countBadge.textContent = `${len} ${len === 1 ? 'reading' : 'readings'}`;
+    const latestKeys = new Map();
+
+    currentDataPoints.forEach(pt => {
+        const payload = (pt && typeof pt.payload === 'object' && pt.payload !== null) ? pt.payload : {};
+        Object.entries(payload).forEach(([key, val]) => {
+            if (!latestKeys.has(key)) {
+                latestKeys.set(key, {
+                    value: val,
+                    recorded_at: pt.recorded_at
+                });
+            }
+        });
+    });
+
+    const fieldMap = new Map();
+    if (currentEntity && Array.isArray(currentEntity.fields)) {
+        currentEntity.fields.forEach(f => {
+            if (f && f.name) {
+                fieldMap.set(f.name, f);
+                if (!latestKeys.has(f.name)) {
+                    latestKeys.set(f.name, {
+                        value: null,
+                        recorded_at: null
+                    });
+                }
+            }
+        });
     }
 
-    if (currentDataPoints.length === 0) {
+    if (countBadge) {
+        const len = latestKeys.size;
+        countBadge.textContent = `${len} ${len === 1 ? 'attribute' : 'attributes'}`;
+    }
+
+    if (latestKeys.size === 0) {
         tbody.replaceChildren();
         if (emptyEl) emptyEl.style.display = 'block';
         if (tableEl) tableEl.style.display = 'none';
@@ -409,91 +366,53 @@ function renderDataTable() {
     if (tableEl) tableEl.style.display = 'table';
     tbody.replaceChildren();
 
-    const fieldMap = new Map();
-    if (currentEntity && Array.isArray(currentEntity.fields)) {
-        currentEntity.fields.forEach(f => {
-            if (f && f.name) fieldMap.set(f.name, f);
-        });
-    }
+    const sortedKeys = Array.from(latestKeys.keys()).sort();
 
-    currentDataPoints.slice(0, 20).forEach(pt => {
+    sortedKeys.forEach(key => {
+        const entry = latestKeys.get(key);
         const tr = document.createElement('tr');
 
-        const timeTd = document.createElement('td');
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'telemetry-timestamp';
-        timeSpan.textContent = formatDateTime(pt.recorded_at);
-        timeTd.appendChild(timeSpan);
-        tr.appendChild(timeTd);
+        const nameTd = document.createElement('td');
+        const keyEl = document.createElement('span');
+        keyEl.style.fontFamily = 'var(--font-mono)';
+        keyEl.style.fontWeight = '600';
+        keyEl.style.color = 'var(--text-primary)';
+        keyEl.style.fontSize = '0.88rem';
+        keyEl.textContent = key;
+        nameTd.appendChild(keyEl);
+        tr.appendChild(nameTd);
 
-        const relTd = document.createElement('td');
-        const relSpan = document.createElement('span');
-        relSpan.className = 'telemetry-age';
-        relSpan.textContent = formatRelativeTime(pt.recorded_at);
-        relTd.appendChild(relSpan);
-        tr.appendChild(relTd);
+        const valTd = document.createElement('td');
+        const valSpan = document.createElement('span');
+        valSpan.style.fontFamily = 'var(--font-mono)';
+        valSpan.style.fontWeight = '600';
+        valSpan.style.fontSize = '0.95rem';
+        valSpan.style.color = 'var(--accent)';
 
-        const payloadTd = document.createElement('td');
-        const chipsWrap = document.createElement('div');
-        chipsWrap.className = 'telemetry-chips-wrap';
-
-        const entries = Object.entries(pt.payload || {});
-        if (entries.length === 0) {
-            const emptyChip = document.createElement('span');
-            emptyChip.className = 'field-tag';
-            emptyChip.textContent = 'Empty payload';
-            chipsWrap.appendChild(emptyChip);
-        } else {
-            entries.forEach(([key, val]) => {
-                const chip = document.createElement('div');
-                chip.className = 'telemetry-chip';
-
-                const keyEl = document.createElement('span');
-                keyEl.className = 'telemetry-chip__key';
-                keyEl.textContent = key;
-                chip.appendChild(keyEl);
-
-                const valEl = document.createElement('span');
-                valEl.className = 'telemetry-chip__val';
-                valEl.textContent = String(val);
-                chip.appendChild(valEl);
-
-                const fieldDef = fieldMap.get(key);
-                if (fieldDef && fieldDef.unit) {
-                    const unitEl = document.createElement('span');
-                    unitEl.className = 'telemetry-chip__unit';
-                    unitEl.textContent = fieldDef.unit;
-                    chip.appendChild(unitEl);
-                }
-
-                chipsWrap.appendChild(chip);
-            });
+        let displayVal = (entry.value !== null && entry.value !== undefined) ? String(entry.value) : '—';
+        const fieldDef = fieldMap.get(key);
+        if (fieldDef && fieldDef.unit && displayVal !== '—') {
+            displayVal += ` ${fieldDef.unit}`;
         }
-        payloadTd.appendChild(chipsWrap);
-        tr.appendChild(payloadTd);
+        valSpan.textContent = displayVal;
+        valTd.appendChild(valSpan);
+        tr.appendChild(valTd);
 
-        const actionTd = document.createElement('td');
-        actionTd.style.textAlign = 'right';
-
-        const copyBtn = document.createElement('button');
-        copyBtn.type = 'button';
-        copyBtn.className = 'telemetry-row-btn';
-        copyBtn.title = 'Copy JSON';
-        copyBtn.textContent = 'Copy JSON';
-        copyBtn.onclick = () => {
-            const jsonText = JSON.stringify(pt.payload || {}, null, 2);
-            copyToClipboard(jsonText, copyBtn);
-        };
-        actionTd.appendChild(copyBtn);
-        tr.appendChild(actionTd);
+        const timeTd = document.createElement('td');
+        timeTd.style.fontFamily = 'var(--font-mono)';
+        timeTd.style.fontSize = '0.82rem';
+        timeTd.style.color = 'var(--text-secondary)';
+        if (entry.recorded_at) {
+            timeTd.textContent = `${formatDateTime(entry.recorded_at)} (${formatRelativeTime(entry.recorded_at)})`;
+        } else {
+            timeTd.textContent = 'Awaiting telemetry';
+        }
+        tr.appendChild(timeTd);
 
         tbody.appendChild(tr);
     });
 }
 
-/**
- * Bind telemetry stream manual refresh button.
- */
 function setupStreamControls() {
     const refreshBtn = document.getElementById('refreshStreamBtn');
     if (refreshBtn) {
@@ -505,9 +424,6 @@ function setupStreamControls() {
     }
 }
 
-/**
- * Configure entity deletion modal dialog and security confirmation.
- */
 function setupDeleteModal() {
     const modal = document.getElementById('deleteEntityModal');
     const openBtn = document.getElementById('openDeleteModalBtn');
@@ -540,17 +456,11 @@ function setupDeleteModal() {
     }
 }
 
-/**
- * Dismiss the entity delete modal dialog.
- */
 function closeDeleteModal() {
     const modal = document.getElementById('deleteEntityModal');
     if (modal) modal.classList.remove('modal-backdrop--open');
 }
 
-/**
- * Handle entity deletion confirmation with API key authentication header.
- */
 async function handleDeleteEntitySubmit(e) {
     e.preventDefault();
     const apiKey = document.getElementById('deleteApiKeyInput').value.trim();
@@ -586,9 +496,6 @@ async function handleDeleteEntitySubmit(e) {
     }
 }
 
-/**
- * Register global keyboard accessibility shortcuts for modal management.
- */
 function setupKeyboardShortcuts() {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {

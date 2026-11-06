@@ -1,13 +1,6 @@
 <?php
-/**
- * Database schema migration script for creating entities, data_points, and widgets tables.
- */
-
 declare(strict_types=1);
 
-/**
- * Execute schema migrations and establish database tables.
- */
 function run_migrations(): array
 {
     $host = getenv('DB_HOST') ?: '127.0.0.1';

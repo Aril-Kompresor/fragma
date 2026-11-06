@@ -1,8 +1,3 @@
-/**
- * Cloud Gateway & Telemetry Bridge module.
- * Integrates live Open-Meteo REST API and mock Edge Gateway with Fetch, JSON, and async/await.
- */
-
 let activeSource = 'open-meteo';
 let activeScenario = 'normal';
 let lastResponseData = null;
@@ -12,9 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initBridge();
 });
 
-/**
- * Initialize bridge listeners, system clock, and trigger initial telemetry fetch.
- */
 function initBridge() {
     bindSourceControls();
     bindScenarioControls();
@@ -24,9 +16,6 @@ function initBridge() {
     executeFetch();
 }
 
-/**
- * Switch the active data source, sync the toggle buttons and hint text.
- */
 function setSource(source) {
     activeSource = source;
     const isLive = source === 'open-meteo';
@@ -44,9 +33,6 @@ function setSource(source) {
     }
 }
 
-/**
- * Bind data source switch buttons (Open-Meteo vs sample gateway).
- */
 function bindSourceControls() {
     const btnOpenMeteo = document.getElementById('sourceOpenMeteo');
     const btnMock = document.getElementById('sourceMockGateway');
@@ -70,9 +56,6 @@ function bindSourceControls() {
     }
 }
 
-/**
- * Bind quick scenario test buttons for evaluators.
- */
 function bindScenarioControls() {
     const buttons = [
         { id: 'testSuccessBtn', scenario: 'normal' },
@@ -99,9 +82,6 @@ function bindScenarioControls() {
     });
 }
 
-/**
- * Update UI state of scenario tester buttons to reflect active selection.
- */
 function updateScenarioButtonsUi() {
     const map = {
         'normal': 'testSuccessBtn',
@@ -123,9 +103,6 @@ function updateScenarioButtonsUi() {
     }
 }
 
-/**
- * Bind synchronization, payload copy, and inspector accordion buttons.
- */
 function bindActionButtons() {
     const btnSync = document.getElementById('btnSync');
     if (btnSync) {
@@ -197,9 +174,6 @@ function bindActionButtons() {
     }
 }
 
-/**
- * Bind modal dialog opening, closing, and keyboard trap escape handlers.
- */
 function bindModalControls() {
     const btnOpen = document.getElementById('btnDocModal');
     const modal = document.getElementById('docModal');
@@ -232,9 +206,6 @@ function bindModalControls() {
     });
 }
 
-/**
- * Update system clock element every 1000ms.
- */
 function startSystemClock() {
     const clockEl = document.getElementById('systemClock');
     const update = () => {
@@ -247,9 +218,6 @@ function startSystemClock() {
     setInterval(update, 1000);
 }
 
-/**
- * Build target URL based on active source and scenario selection.
- */
 function buildTargetUrl() {
     if (activeScenario === 'offline') {
         return 'https://unreachable-invalid-domain-fragma-iot.test/api/telemetry';
@@ -275,9 +243,6 @@ function buildTargetUrl() {
     return query ? `${mockBase}?${query}` : mockBase;
 }
 
-/**
- * Fetch telemetry data using Fetch API, JSON parsing, and async/await.
- */
 async function executeFetch() {
     const targetUrl = buildTargetUrl();
     const endpointLink = document.getElementById('activeEndpointLink');
@@ -332,9 +297,6 @@ async function executeFetch() {
     }
 }
 
-/**
- * Display loading state skeleton and disable synchronization controls.
- */
 function renderLoadingState() {
     document.getElementById('viewLoading').style.display = 'block';
     document.getElementById('viewSuccess').style.display = 'none';
@@ -361,9 +323,6 @@ function renderLoadingState() {
     }
 }
 
-/**
- * Render success state UI with telemetry cards and metrics.
- */
 function renderSuccessState(data, latencyMs, httpStatus) {
     document.getElementById('viewLoading').style.display = 'none';
     document.getElementById('viewSuccess').style.display = 'block';
@@ -379,9 +338,6 @@ function renderSuccessState(data, latencyMs, httpStatus) {
     }
 }
 
-/**
- * Build one telemetry card element using text nodes only.
- */
 function buildTelemetryCard(label, value, unit, note) {
     const card = document.createElement('div');
     card.className = 'telemetry-card';
@@ -419,9 +375,6 @@ function buildTelemetryCard(label, value, unit, note) {
     return card;
 }
 
-/**
- * Render the four weather cards for the Open-Meteo source.
- */
 function renderOpenMeteoCards(data) {
     const cur = data.current || {};
     const temp = cur.temperature_2m !== undefined ? cur.temperature_2m : '-';
@@ -440,9 +393,6 @@ function renderOpenMeteoCards(data) {
     );
 }
 
-/**
- * Render one card per sensor returned by the sample gateway.
- */
 function renderMockGatewayCards(data) {
     const grid = document.getElementById('telemetryGrid');
     if (!grid) return;
@@ -457,9 +407,6 @@ function renderMockGatewayCards(data) {
     grid.replaceChildren(...cards);
 }
 
-/**
- * Render empty state UI when no telemetry data nodes are returned.
- */
 function renderEmptyState(data, latencyMs, httpStatus) {
     document.getElementById('viewLoading').style.display = 'none';
     document.getElementById('viewSuccess').style.display = 'none';
@@ -474,9 +421,6 @@ function renderEmptyState(data, latencyMs, httpStatus) {
     }
 }
 
-/**
- * Render error state UI when network or server request fails.
- */
 function renderErrorState(err, latencyMs) {
     document.getElementById('viewLoading').style.display = 'none';
     document.getElementById('viewSuccess').style.display = 'none';
@@ -507,9 +451,6 @@ function renderErrorState(err, latencyMs) {
     }
 }
 
-/**
- * Finalize status chips, timer readings, and re-enable synchronization button.
- */
 function finalizeStatusMetrics(statusCode, label, latencyMs, chipClass) {
     const chip = document.getElementById('httpStatusChip');
     if (chip) {
@@ -536,9 +477,6 @@ function finalizeStatusMetrics(statusCode, label, latencyMs, chipClass) {
     }
 }
 
-/**
- * Update raw JSON payload viewer code block and size counter.
- */
 function updateRawPayloadViewer(json) {
     const codeEl = document.getElementById('rawJsonContent');
     const sizeEl = document.getElementById('rawByteSize');
@@ -553,9 +491,6 @@ function updateRawPayloadViewer(json) {
     }
 }
 
-/**
- * Toggle visibility of raw JSON payload accordion inspector.
- */
 function toggleRawInspector() {
     rawInspectorExpanded = !rawInspectorExpanded;
     const body = document.getElementById('rawInspectorBody');
@@ -569,9 +504,6 @@ function toggleRawInspector() {
     }
 }
 
-/**
- * Copy JSON payload text to clipboard and provide temporary feedback.
- */
 function copyJsonPayload() {
     if (!lastResponseData) return;
     const text = JSON.stringify(lastResponseData, null, 2);
@@ -587,9 +519,6 @@ function copyJsonPayload() {
     });
 }
 
-/**
- * Map numerical WMO weather codes to human-readable Indonesian descriptions.
- */
 function getWmoWeatherDescription(code) {
     const table = {
         0: 'Langit Cerah',

@@ -1,15 +1,8 @@
 <?php
-/**
- * API key authentication and verification routines.
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/response.php';
 
-/**
- * Retrieve the X-API-Key header value from the current HTTP request.
- */
 function get_api_key_header(): ?string
 {
     if (!empty($_SERVER['HTTP_X_API_KEY'])) {
@@ -41,9 +34,6 @@ function get_api_key_header(): ?string
     return null;
 }
 
-/**
- * Validate that the provided API key header matches the registered key for the given entity ID.
- */
 function validate_api_key(PDO $pdo, int $entityId): bool
 {
     $apiKey = get_api_key_header();
@@ -62,9 +52,6 @@ function validate_api_key(PDO $pdo, int $entityId): bool
     return hash_equals((string) $row['api_key'], $apiKey);
 }
 
-/**
- * Enforce that the request contains a valid API key for the target entity, terminating on failure.
- */
 function require_api_key(PDO $pdo, int $entityId): void
 {
     if (!validate_api_key($pdo, $entityId)) {

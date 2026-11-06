@@ -1,12 +1,5 @@
-/**
- * Line Chart widget renderer using Chart.js for time-series visualization.
- */
-
 const activeChartInstances = new Map();
 
-/**
- * Destroy any existing Chart.js instance associated with the specified widget ID.
- */
 function destroyChartInstance(widgetId) {
     if (activeChartInstances.has(widgetId)) {
         const chart = activeChartInstances.get(widgetId);
@@ -15,9 +8,6 @@ function destroyChartInstance(widgetId) {
     }
 }
 
-/**
- * Render a Line Chart widget into the specified container element.
- */
 function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
     destroyChartInstance(widgetId);
     container.innerHTML = '';
@@ -146,12 +136,11 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
     });
 
     activeChartInstances.set(widgetId, chart);
-    
-    // Support in-place updates without recreation
-    container.widgetUpdate = function(newData) {
+
+    container.widgetUpdate = function (newData) {
         const currentChart = activeChartInstances.get(widgetId);
         if (!currentChart) return;
-        
+
         const chrono = Array.isArray(newData) ? [...newData].reverse() : [];
         const newLabels = [];
         const newValues = [];
@@ -168,11 +157,9 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
 
         currentChart.data.labels = newLabels.length > 0 ? newLabels : ['No data'];
         currentChart.data.datasets[0].data = newValues.length > 0 ? newValues : [0];
-        
-        // Hide points if too many
+
         currentChart.data.datasets[0].pointRadius = newValues.length > 30 ? 0 : (config.variant === 'line' ? 4 : 2);
-        
-        // Update WITHOUT animation so it feels like a live dash
+
         currentChart.update('none');
     };
 }

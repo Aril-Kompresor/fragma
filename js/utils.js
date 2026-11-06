@@ -1,10 +1,3 @@
-/**
- * Shared frontend utilities for formatting, clipboard handling, and safe DOM interactions.
- */
-
-/**
- * Format an ISO or SQL timestamp into a human-readable relative time string.
- */
 function formatRelativeTime(dateString) {
     if (!dateString) return 'Never';
     const date = new Date(dateString.replace(' ', 'T') + 'Z');
@@ -22,9 +15,6 @@ function formatRelativeTime(dateString) {
     return `${Math.floor(diffSeconds / 86400)}d ago`;
 }
 
-/**
- * Format a timestamp into standard localized date and time string.
- */
 function formatDateTime(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString.replace(' ', 'T'));
@@ -32,9 +22,6 @@ function formatDateTime(dateString) {
     return date.toLocaleString();
 }
 
-/**
- * Copy text content to the user's system clipboard and provide button feedback.
- */
 async function copyToClipboard(text, triggerButton) {
     if (text === null || text === undefined || text === '') {
         return false;
@@ -84,9 +71,6 @@ async function copyToClipboard(text, triggerButton) {
     return success;
 }
 
-/**
- * Sanitize plain string input to prevent HTML injection vulnerabilities.
- */
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -97,9 +81,6 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-/**
- * Store an entity API key securely in browser local storage for convenience.
- */
 function saveLocalApiKey(entityId, apiKey) {
     try {
         localStorage.setItem(`fragma_key_${entityId}`, apiKey);
@@ -107,9 +88,6 @@ function saveLocalApiKey(entityId, apiKey) {
     }
 }
 
-/**
- * Retrieve a previously saved entity API key from browser local storage.
- */
 function getLocalApiKey(entityId) {
     try {
         return localStorage.getItem(`fragma_key_${entityId}`) || '';

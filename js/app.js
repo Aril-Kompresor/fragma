@@ -1,7 +1,3 @@
-/**
- * Main dashboard application controller managing ThingsBoard-style entity table, creation modal, and polling.
- */
-
 let pollingIntervalId = null;
 let rawEntities = [];
 let currentTab = 'all';
@@ -11,18 +7,11 @@ let pageSize = 10;
 let isPollingEnabled = true;
 let selectedEntityIds = new Set();
 
-/**
- * Initialize dashboard view, load entities, and establish background polling.
- */
 document.addEventListener('DOMContentLoaded', () => {
     initDashboard();
 });
 
-/**
- * Mount event listeners, render initial entities, and start the polling cycle.
- */
 function initDashboard() {
-    setupModalEvents();
     setupThingsBoardControls();
     loadEntities();
     startPolling();
@@ -32,18 +21,12 @@ function initDashboard() {
     });
 }
 
-/**
- * Start periodic live polling.
- */
 function startPolling() {
     stopPolling();
     if (!isPollingEnabled) return;
     pollingIntervalId = setInterval(loadEntities, 10000);
 }
 
-/**
- * Clear existing background polling timer.
- */
 function stopPolling() {
     if (pollingIntervalId) {
         clearInterval(pollingIntervalId);
@@ -51,9 +34,6 @@ function stopPolling() {
     }
 }
 
-/**
- * Setup ThingsBoard toolbar controls, search, tabs, and pagination handlers.
- */
 function setupThingsBoardControls() {
     const tabAll = document.getElementById('tabAllEntities');
     const tabActive = document.getElementById('tabActiveEntities');
@@ -152,9 +132,6 @@ function setupThingsBoardControls() {
     };
 }
 
-/**
- * Fetch entity collection from backend and update ThingsBoard data table.
- */
 async function loadEntities() {
     const loading = document.getElementById('entitiesLoading');
 
@@ -180,9 +157,6 @@ async function loadEntities() {
     }
 }
 
-/**
- * Update entity count indicators on tabs.
- */
 function updateTabCounts() {
     const countAll = document.getElementById('countAllEntities');
     const countActive = document.getElementById('countActiveEntities');
@@ -205,9 +179,6 @@ function updateTabCounts() {
     if (countInactive) countInactive.textContent = String(inactiveCount);
 }
 
-/**
- * Filter entity list based on active tab and search query string.
- */
 function getFilteredEntities() {
     return rawEntities.filter(item => {
         const isRecent = item.last_data_at && (new Date() - new Date(item.last_data_at.replace(' ', 'T') + 'Z') < 120000);
@@ -225,9 +196,6 @@ function getFilteredEntities() {
     });
 }
 
-/**
- * Apply filtering, calculate pagination slice, and render table rows.
- */
 function applyFilterAndRender() {
     const filtered = getFilteredEntities();
     const totalCount = filtered.length;
@@ -243,9 +211,6 @@ function applyFilterAndRender() {
     renderThingsBoardTable(pageItems, totalCount, startIndex, endIndex, maxPages);
 }
 
-/**
- * Render ThingsBoard-style entity table rows and update pagination elements.
- */
 function renderThingsBoardTable(items, totalCount, startIndex, endIndex, maxPages) {
     const tableEl = document.getElementById('entitiesTable');
     const tbody = document.getElementById('entitiesTableBody');
@@ -332,59 +297,9 @@ function renderThingsBoardTable(items, totalCount, startIndex, endIndex, maxPage
         const profileTd = document.createElement('td');
         const profileBadge = document.createElement('span');
         profileBadge.className = 'tb-profile-badge';
-        profileBadge.textContent = 'ESP32 Device Profile';
+        profileBadge.textContent = 'default';
         profileTd.appendChild(profileBadge);
         tr.appendChild(profileTd);
-
-        const fieldsTd = document.createElement('td');
-        const fieldsWrap = document.createElement('div');
-        fieldsWrap.style.display = 'flex';
-        fieldsWrap.style.flexWrap = 'wrap';
-        fieldsWrap.style.gap = '6px';
-        fieldsWrap.style.alignItems = 'center';
-
-        const hasData = (item.data_count || 0) > 0;
-        const latest = (item.latest_payload && typeof item.latest_payload === 'object') ? item.latest_payload : {};
-        const fields = Array.isArray(item.fields) ? item.fields : [];
-
-        if (!hasData || fields.length === 0) {
-            const waitingPill = document.createElement('span');
-            waitingPill.className = 'tb-telemetry-badge tb-telemetry-badge--waiting';
-            waitingPill.innerHTML = `<span class="tb-pulse-dot"></span><span>Awaiting API Telemetry</span>`;
-            fieldsWrap.appendChild(waitingPill);
-        } else {
-            const maxVisible = 3;
-            fields.slice(0, maxVisible).forEach(f => {
-                const chip = document.createElement('span');
-                chip.className = 'tb-telemetry-chip';
-                const keySpan = document.createElement('span');
-                keySpan.className = 'tb-telemetry-chip__key';
-                keySpan.textContent = `${f.name}:`;
-                chip.appendChild(keySpan);
-
-                const valSpan = document.createElement('span');
-                valSpan.className = 'tb-telemetry-chip__val';
-                let valDisplay = latest[f.name] !== undefined ? String(latest[f.name]) : '-';
-                if (f.unit && valDisplay !== '-') {
-                    valDisplay += ` ${f.unit}`;
-                }
-                valSpan.textContent = valDisplay;
-                chip.appendChild(valSpan);
-
-                fieldsWrap.appendChild(chip);
-            });
-
-            if (fields.length > maxVisible) {
-                const moreChip = document.createElement('span');
-                moreChip.className = 'tb-telemetry-chip';
-                moreChip.style.color = 'var(--text-muted)';
-                moreChip.title = fields.slice(maxVisible).map(f => f.name).join(', ');
-                moreChip.textContent = `+${fields.length - maxVisible} more`;
-                fieldsWrap.appendChild(moreChip);
-            }
-        }
-        fieldsTd.appendChild(fieldsWrap);
-        tr.appendChild(fieldsTd);
 
         const stateTd = document.createElement('td');
         const stateBadge = document.createElement('span');
@@ -439,457 +354,5 @@ function renderThingsBoardTable(items, totalCount, startIndex, endIndex, maxPage
     if (selectAllCheckbox) {
         selectAllCheckbox.checked = allChecked;
     }
-}
-
-/**
- * Validate entity name length, presence, and allowed character pattern.
- */
-function validateEntityName(name) {
-    const trimmed = name.trim();
-    if (!trimmed) {
-        return { valid: false, error: 'Device name is required.' };
-    }
-    if (trimmed.length < 3 || trimmed.length > 50) {
-        return { valid: false, error: 'Device name must be between 3 and 50 characters.' };
-    }
-    if (!/^[a-zA-Z0-9\s_-]+$/.test(trimmed)) {
-        return { valid: false, error: 'Device name may only contain letters, numbers, spaces, hyphens, and underscores.' };
-    }
-    return { valid: true };
-}
-
-/**
- * Validate hardware platform selection against allowed list.
- */
-function validateEntityPlatform(platform) {
-    const validPlatforms = ['esp32', 'esp8266', 'arduino', 'raspberry_pi', 'custom'];
-    if (!platform || !validPlatforms.includes(platform)) {
-        return { valid: false, error: 'Please choose a target hardware platform.' };
-    }
-    return { valid: true };
-}
-
-/**
- * Validate telemetry interval is a whole integer between 5 and 3600 seconds.
- */
-function validateEntityInterval(intervalVal) {
-    const num = Number(intervalVal);
-    if (!intervalVal || !Number.isInteger(num) || num < 5 || num > 3600) {
-        return { valid: false, error: 'Post interval must be a whole number between 5 and 3600 seconds.' };
-    }
-    return { valid: true };
-}
-
-/**
- * Validate optional location description length constraint.
- */
-function validateEntityNotes(notes) {
-    if (notes.length > 150) {
-        return { valid: false, error: 'Location notes cannot exceed 150 characters.' };
-    }
-    return { valid: true };
-}
-
-/**
- * Mark input element as invalid and render error message in live region.
- */
-function setFieldError(inputEl, errorEl, errorMessage) {
-    if (!inputEl || !errorEl) return;
-    const errorClass = inputEl.tagName === 'SELECT' ? 'form-select--error' : (inputEl.tagName === 'TEXTAREA' ? 'form-textarea--error' : 'form-input--error');
-    inputEl.classList.add(errorClass);
-    inputEl.setAttribute('aria-invalid', 'true');
-    errorEl.textContent = errorMessage;
-    errorEl.classList.add('form-error--visible');
-}
-
-/**
- * Restore input element to valid state and clear associated error message.
- */
-function clearFieldError(inputEl, errorEl) {
-    if (!inputEl || !errorEl) return;
-    inputEl.classList.remove('form-input--error', 'form-select--error', 'form-textarea--error');
-    inputEl.setAttribute('aria-invalid', 'false');
-    errorEl.textContent = '';
-    errorEl.classList.remove('form-error--visible');
-}
-
-/**
- * Reset all error messages and validation highlights on create entity form.
- */
-function clearAllCreateFormErrors() {
-    const fields = [
-        { inputId: 'entityNameInput', errorId: 'entityNameError' },
-        { inputId: 'entityPlatformSelect', errorId: 'entityPlatformError' },
-        { inputId: 'entityIntervalInput', errorId: 'entityIntervalError' },
-        { inputId: 'entityNotesInput', errorId: 'entityNotesError' }
-    ];
-
-    fields.forEach(({ inputId, errorId }) => {
-        const inputEl = document.getElementById(inputId);
-        const errorEl = document.getElementById(errorId);
-        clearFieldError(inputEl, errorEl);
-    });
-
-    const summaryEl = document.getElementById('formValidationSummary');
-    if (summaryEl) {
-        summaryEl.textContent = '';
-        summaryEl.classList.add('form-summary--hidden');
-    }
-}
-
-/**
- * Execute client-side validation rules and manage visual focus for invalid inputs.
- */
-function validateEntireCreateForm() {
-    clearAllCreateFormErrors();
-
-    const nameInput = document.getElementById('entityNameInput');
-    const nameError = document.getElementById('entityNameError');
-    const platformInput = document.getElementById('entityPlatformSelect');
-    const platformError = document.getElementById('entityPlatformError');
-    const intervalInput = document.getElementById('entityIntervalInput');
-    const intervalError = document.getElementById('entityIntervalError');
-    const notesInput = document.getElementById('entityNotesInput');
-    const notesError = document.getElementById('entityNotesError');
-    const summaryEl = document.getElementById('formValidationSummary');
-
-    const errors = [];
-    let firstInvalidElement = null;
-
-    const nameRes = validateEntityName(nameInput.value);
-    if (!nameRes.valid) {
-        setFieldError(nameInput, nameError, nameRes.error);
-        errors.push(nameRes.error);
-        if (!firstInvalidElement) firstInvalidElement = nameInput;
-    }
-
-    const platformRes = validateEntityPlatform(platformInput.value);
-    if (!platformRes.valid) {
-        setFieldError(platformInput, platformError, platformRes.error);
-        errors.push(platformRes.error);
-        if (!firstInvalidElement) firstInvalidElement = platformInput;
-    }
-
-    const intervalRes = validateEntityInterval(intervalInput.value);
-    if (!intervalRes.valid) {
-        setFieldError(intervalInput, intervalError, intervalRes.error);
-        errors.push(intervalRes.error);
-        if (!firstInvalidElement) firstInvalidElement = intervalInput;
-    }
-
-    const notesRes = validateEntityNotes(notesInput.value);
-    if (!notesRes.valid) {
-        setFieldError(notesInput, notesError, notesRes.error);
-        errors.push(notesRes.error);
-        if (!firstInvalidElement) firstInvalidElement = notesInput;
-    }
-
-    if (errors.length > 0) {
-        if (summaryEl) {
-            summaryEl.textContent = `Please correct the ${errors.length} highlighted error(s) below before submitting.`;
-            summaryEl.classList.remove('form-summary--hidden');
-        }
-        if (firstInvalidElement) {
-            firstInvalidElement.focus();
-        }
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * Handle accessibility keyboard trap and Escape dismiss within the create modal.
- */
-function handleModalKeyDown(e) {
-    if (e.key === 'Escape') {
-        closeCreateModal();
-        return;
-    }
-
-    if (e.key === 'Tab') {
-        const modal = document.getElementById('createModal');
-        if (!modal) return;
-        const focusable = modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])');
-        if (focusable.length === 0) return;
-
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-
-        if (e.shiftKey && document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-        }
-    }
-}
-
-/**
- * Configure modal dialog triggers, backdrop clicks, live validation, and form submissions.
- */
-function setupModalEvents() {
-    const modal = document.getElementById('createModal');
-    const successModal = document.getElementById('keySuccessModal');
-    const openBtn = document.getElementById('openCreateModalBtn');
-    const closeBtn = document.getElementById('closeCreateModalBtn');
-    const cancelBtn = document.getElementById('cancelCreateModalBtn');
-    const closeSuccessBtn = document.getElementById('closeSuccessModalBtn');
-    const form = document.getElementById('createEntityForm');
-
-    const nameInput = document.getElementById('entityNameInput');
-    const nameError = document.getElementById('entityNameError');
-    const platformInput = document.getElementById('entityPlatformSelect');
-    const platformError = document.getElementById('entityPlatformError');
-    const intervalInput = document.getElementById('entityIntervalInput');
-    const intervalError = document.getElementById('entityIntervalError');
-    const notesInput = document.getElementById('entityNotesInput');
-    const notesError = document.getElementById('entityNotesError');
-    const notesCounter = document.getElementById('entityNotesCounter');
-
-    const doneSuccessBtn = document.getElementById('doneSuccessModalBtn');
-
-    if (openBtn) openBtn.addEventListener('click', openCreateModal);
-    if (closeBtn) closeBtn.addEventListener('click', closeCreateModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeCreateModal);
-    if (closeSuccessBtn) closeSuccessBtn.addEventListener('click', closeSuccessModal);
-    if (doneSuccessBtn) doneSuccessBtn.addEventListener('click', closeSuccessModal);
-
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeCreateModal();
-        });
-        modal.addEventListener('keydown', handleModalKeyDown);
-    }
-
-    if (successModal) {
-        successModal.addEventListener('click', (e) => {
-            if (e.target === successModal) closeSuccessModal();
-        });
-    }
-
-    if (nameInput) {
-        nameInput.addEventListener('input', () => {
-            if (nameInput.getAttribute('aria-invalid') === 'true') {
-                const res = validateEntityName(nameInput.value);
-                if (res.valid) clearFieldError(nameInput, nameError);
-            }
-        });
-        nameInput.addEventListener('blur', () => {
-            if (nameInput.value.trim().length > 0) {
-                const res = validateEntityName(nameInput.value);
-                if (!res.valid) setFieldError(nameInput, nameError, res.error);
-                else clearFieldError(nameInput, nameError);
-            }
-        });
-    }
-
-    if (platformInput) {
-        platformInput.addEventListener('change', () => {
-            const res = validateEntityPlatform(platformInput.value);
-            if (!res.valid) setFieldError(platformInput, platformError, res.error);
-            else clearFieldError(platformInput, platformError);
-        });
-    }
-
-    if (intervalInput) {
-        intervalInput.addEventListener('input', () => {
-            if (intervalInput.getAttribute('aria-invalid') === 'true') {
-                const res = validateEntityInterval(intervalInput.value);
-                if (res.valid) clearFieldError(intervalInput, intervalError);
-            }
-        });
-        intervalInput.addEventListener('blur', () => {
-            const res = validateEntityInterval(intervalInput.value);
-            if (!res.valid) setFieldError(intervalInput, intervalError, res.error);
-            else clearFieldError(intervalInput, intervalError);
-        });
-    }
-
-    if (notesInput && notesCounter) {
-        notesInput.addEventListener('input', () => {
-            const currentLen = notesInput.value.length;
-            notesCounter.textContent = `${currentLen} / 150`;
-            if (currentLen >= 150) {
-                notesCounter.classList.add('form-counter--limit');
-            } else {
-                notesCounter.classList.remove('form-counter--limit');
-            }
-            if (notesInput.getAttribute('aria-invalid') === 'true') {
-                const res = validateEntityNotes(notesInput.value);
-                if (res.valid) clearFieldError(notesInput, notesError);
-            }
-        });
-    }
-
-    if (form) {
-        form.addEventListener('submit', handleCreateEntitySubmit);
-    }
-}
-
-/**
- * Display the create entity modal dialog, reset fields, and focus initial input.
- */
-function openCreateModal() {
-    const modal = document.getElementById('createModal');
-    const form = document.getElementById('createEntityForm');
-    const notesCounter = document.getElementById('entityNotesCounter');
-    if (!modal) return;
-
-    if (form) form.reset();
-    clearAllCreateFormErrors();
-
-    if (notesCounter) {
-        notesCounter.textContent = '0 / 150';
-        notesCounter.classList.remove('form-counter--limit');
-    }
-
-    const intervalInput = document.getElementById('entityIntervalInput');
-    if (intervalInput) intervalInput.value = '30';
-
-    modal.classList.add('modal-backdrop--open');
-    const nameInput = document.getElementById('entityNameInput');
-    if (nameInput) {
-        setTimeout(() => nameInput.focus(), 50);
-    }
-}
-
-/**
- * Dismiss the create entity modal dialog and restore trigger focus.
- */
-function closeCreateModal() {
-    const modal = document.getElementById('createModal');
-    if (modal) modal.classList.remove('modal-backdrop--open');
-    const openBtn = document.getElementById('openCreateModalBtn');
-    if (openBtn) openBtn.focus();
-}
-
-/**
- * Dismiss the API key success confirmation modal.
- */
-function closeSuccessModal() {
-    const successModal = document.getElementById('keySuccessModal');
-    if (successModal) successModal.classList.remove('modal-backdrop--open');
-    loadEntities();
-}
-
-/**
- * Process entity creation submission and display API key dialog.
- */
-async function handleCreateEntitySubmit(e) {
-    e.preventDefault();
-    if (!validateEntireCreateForm()) {
-        return;
-    }
-
-    const submitBtn = document.getElementById('submitCreateBtn');
-    const submitBtnText = document.getElementById('submitCreateBtnText');
-    const nameInput = document.getElementById('entityNameInput');
-    const summaryEl = document.getElementById('formValidationSummary');
-
-    const name = nameInput.value.trim();
-
-    try {
-        if (submitBtn) submitBtn.disabled = true;
-        if (submitBtnText) submitBtnText.textContent = 'Creating...';
-
-        const newEntity = await apiFetch('/entities.php', {
-            method: 'POST',
-            body: { name, fields: [] }
-        });
-
-        saveLocalApiKey(newEntity.id, newEntity.api_key);
-        closeCreateModal();
-        showKeySuccessModal(newEntity);
-    } catch (err) {
-        if (summaryEl) {
-            summaryEl.textContent = `Server error: ${err.message}`;
-            summaryEl.classList.remove('form-summary--hidden');
-            summaryEl.focus();
-        } else {
-            alert(`Failed to create device: ${err.message}`);
-        }
-    } finally {
-        if (submitBtn) submitBtn.disabled = false;
-        if (submitBtnText) submitBtnText.textContent = 'Create Device';
-    }
-}
-
-/**
- * Display the created entity's API key with copy controls, cURL snippet, and test push action.
- */
-function showKeySuccessModal(entity) {
-    const modal = document.getElementById('keySuccessModal');
-    const keyDisplay = document.getElementById('newApiKeyDisplay');
-    const curlSnippetEl = document.getElementById('newApiCurlSnippet');
-    const copyCurlBtn = document.getElementById('copyCurlExampleBtn');
-    const copyBtn = document.getElementById('copyNewKeyBtn');
-    const testPushBtn = document.getElementById('testPushTelemetryBtn');
-    const viewEntityBtn = document.getElementById('goToNewEntityBtn');
-
-    if (!modal) return;
-
-    if (keyDisplay) keyDisplay.textContent = entity.api_key;
-
-    const curlCmd = `curl -X POST ${window.location.origin}/api/data.php \\
-  -H "Content-Type: application/json" \\
-  -H "X-API-Key: ${entity.api_key}" \\
-  -d '{"temperature": 24.5, "humidity": 62, "status": "active"}'`;
-
-    if (curlSnippetEl) {
-        curlSnippetEl.textContent = curlCmd;
-    }
-
-    if (copyCurlBtn) {
-        copyCurlBtn.onclick = () => {
-            copyToClipboard(curlCmd, copyCurlBtn);
-        };
-    }
-
-    if (copyBtn) {
-        copyBtn.onclick = () => {
-            copyToClipboard(entity.api_key, copyBtn);
-        };
-    }
-
-    if (testPushBtn) {
-        testPushBtn.disabled = false;
-        testPushBtn.textContent = 'Send Test Telemetry';
-        testPushBtn.style.color = 'var(--accent)';
-        testPushBtn.style.borderColor = 'var(--accent)';
-        testPushBtn.onclick = async () => {
-            testPushBtn.disabled = true;
-            testPushBtn.textContent = 'Streaming...';
-            try {
-                await apiFetch('/data.php', {
-                    method: 'POST',
-                    headers: { 'X-API-Key': entity.api_key },
-                    body: {
-                        temperature: Number((22 + Math.random() * 6).toFixed(1)),
-                        humidity: Number((50 + Math.random() * 20).toFixed(1)),
-                        battery: 98,
-                        status: 'online'
-                    }
-                });
-                testPushBtn.textContent = 'Telemetry Ingested!';
-                testPushBtn.style.color = 'var(--success)';
-                testPushBtn.style.borderColor = 'var(--success)';
-                await loadEntities();
-            } catch (err) {
-                testPushBtn.disabled = false;
-                testPushBtn.textContent = 'Push Failed';
-                testPushBtn.style.color = 'var(--danger)';
-            }
-        };
-    }
-
-    if (viewEntityBtn) {
-        viewEntityBtn.onclick = () => {
-            window.location.href = `/entity/index.html?id=${entity.id}`;
-        };
-    }
-
-    modal.classList.add('modal-backdrop--open');
 }
 

@@ -1,8 +1,3 @@
-/**
- * Value Card widget renderer with variant support.
- * Variants: 'alarm' (danger-themed), 'entity' (accent-themed), default (config.color).
- */
-
 const VALUE_CARD_VARIANTS = {
     alarm: {
         icon: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e74c6f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>',
@@ -18,7 +13,6 @@ const VALUE_CARD_VARIANTS = {
     }
 };
 
-/** Format a numeric value for display. */
 function formatCardValue(val) {
     if (typeof val === 'number') {
         return Number.isInteger(val) ? String(val) : val.toFixed(2);
@@ -26,7 +20,6 @@ function formatCardValue(val) {
     return String(val);
 }
 
-/** Render a Value Card widget into the specified container element. */
 function renderValueCard(container, dataPoints, config, widgetId, onRemove) {
     container.innerHTML = '';
 
@@ -123,7 +116,7 @@ function renderValueCard(container, dataPoints, config, widgetId, onRemove) {
 
     container.appendChild(card);
 
-    container.widgetUpdate = function(newData) {
+    container.widgetUpdate = function (newData) {
         if (!newData || newData.length === 0) return;
 
         const currentVal = newData[0].payload[config.field];

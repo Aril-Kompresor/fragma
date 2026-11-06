@@ -1,8 +1,4 @@
 <?php
-/**
- * REST API endpoint for Entity CRUD operations.
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db.php';
@@ -12,9 +8,6 @@ require_once __DIR__ . '/../includes/keygen.php';
 
 handle_cors_preflight();
 
-/**
- * Handle GET requests to list all entities or retrieve a single entity by ID.
- */
 function handle_get(PDO $pdo): void
 {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -83,9 +76,6 @@ function handle_get(PDO $pdo): void
     json_response(200, ['success' => true, 'data' => $result]);
 }
 
-/**
- * Handle POST requests to create a new entity and generate its unique API key.
- */
 function handle_post(PDO $pdo): void
 {
     $body = get_json_input();
@@ -141,9 +131,6 @@ function handle_post(PDO $pdo): void
     ]);
 }
 
-/**
- * Handle PUT requests to update an entity's name or fields.
- */
 function handle_put(PDO $pdo): void
 {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -203,9 +190,6 @@ function handle_put(PDO $pdo): void
     ]);
 }
 
-/**
- * Handle DELETE requests to delete an entity and its associated data.
- */
 function handle_delete(PDO $pdo): void
 {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;

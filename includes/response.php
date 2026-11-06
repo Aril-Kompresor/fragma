@@ -1,13 +1,6 @@
 <?php
-/**
- * Shared JSON response helpers and CORS headers for Fragma API.
- */
-
 declare(strict_types=1);
 
-/**
- * Configure and send CORS headers to allow cross-origin requests.
- */
 function set_cors_headers(): void
 {
     header('Access-Control-Allow-Origin: *');
@@ -16,9 +9,6 @@ function set_cors_headers(): void
     header('Access-Control-Max-Age: 86400');
 }
 
-/**
- * Handle HTTP OPTIONS preflight request.
- */
 function handle_cors_preflight(): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -28,9 +18,6 @@ function handle_cors_preflight(): void
     }
 }
 
-/**
- * Send a structured JSON response and terminate the script.
- */
 function json_response(int $status, array $data): void
 {
     set_cors_headers();
@@ -40,9 +27,6 @@ function json_response(int $status, array $data): void
     exit;
 }
 
-/**
- * Read and decode the raw JSON input from the request body.
- */
 function get_json_input(): array
 {
     $raw = file_get_contents('php://input');
