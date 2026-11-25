@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/response.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/flow_engine.php';
 
 handle_cors_preflight();
 
@@ -13,6 +14,8 @@ function handle_get(PDO $pdo): void
     if ($entityId <= 0) {
         json_response(400, ['success' => false, 'error' => 'Missing or invalid entity_id']);
     }
+
+    require_entity_access($pdo, $entityId);
 
     $isLatest = isset($_GET['latest']) && ($_GET['latest'] === '1' || $_GET['latest'] === 'true');
 
@@ -184,9 +187,27 @@ function handle_post(PDO $pdo): void
         json_response(400, ['success' => false, 'error' => 'Payload contains no valid fields']);
     }
 
-    $stmtEntity = $pdo->prepare('SELECT fields FROM entities WHERE id = :id LIMIT 1');
+    $stmtEntity = $pdo->prepare('SELECT user_id, fields FROM entities WHERE id = :id LIMIT 1');
     $stmtEntity->execute([':id' => $entityId]);
     $entityRow = $stmtEntity->fetch();
+    $entityUserId = ($entityRow && $entityRow['user_id'] !== null) ? (int) $entityRow['user_id'] : null;
+
+    $flowResult = run_entity_flows($pdo, $entityId, $entityUserId, $cleanPayload);
+    $cleanPayload = $flowResult['payload'];
+
+    foreach ($cleanPayload as $fieldName => $val) {
+        if (!isset($fieldTypes[$fieldName])) {
+            if (is_int($val) || is_float($val)) {
+                $fieldTypes[$fieldName] = 'number';
+            } elseif (is_bool($val)) {
+                $fieldTypes[$fieldName] = 'boolean';
+            } elseif (is_array($val)) {
+                $fieldTypes[$fieldName] = 'json';
+            } else {
+                $fieldTypes[$fieldName] = 'string';
+            }
+        }
+    }
 
     $existingFields = [];
     if ($entityRow && !empty($entityRow['fields'])) {
@@ -248,6 +269,7 @@ function handle_post(PDO $pdo): void
             'recorded_at'     => $recordedAt,
             'fields'          => $updatedFields,
             'fields_detected' => $newFieldsDetected,
+            'flow_executions' => $flowResult['executions'],
         ]
     ]);
 }

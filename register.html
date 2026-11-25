@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma | Daftar Akun</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261125b">
+</head>
+
+<body>
+    <main class="auth-wrapper">
+        <div class="card auth-card">
+            <div class="auth-header">
+                <a href="/" class="auth-brand">
+                    <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                    Fragma
+                </a>
+                <p class="auth-subtitle">Buat akun untuk mengelola project IoT</p>
+            </div>
+
+            <form id="registerForm" novalidate>
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label for="username" class="form-label">Username</label>
+                    </div>
+                    <input type="text" id="username" name="username" class="form-input" required minlength="3" maxlength="50"
+                        autocomplete="username" placeholder="contoh: operator_sensor">
+                    <span class="form-error" id="usernameError">Username harus 3-50 karakter (huruf, angka, _, -)</span>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label for="email" class="form-label">Email</label>
+                    </div>
+                    <input type="email" id="email" name="email" class="form-input" required
+                        autocomplete="email" placeholder="operator@contoh.com">
+                    <span class="form-error" id="emailError">Alamat email valid wajib diisi</span>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label for="password" class="form-label">Kata Sandi</label>
+                    </div>
+                    <div class="password-field-wrap">
+                        <input type="password" id="password" name="password" class="form-input" required minlength="6"
+                            autocomplete="new-password" placeholder="Buat kata sandi">
+                        <button type="button" id="toggleRegisterPassword" class="password-toggle-btn" aria-label="Tampilkan atau sembunyikan kata sandi" aria-pressed="false">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <div class="form-help">Minimal 6 karakter</div>
+                    <span class="form-error" id="passwordError">Kata sandi minimal 6 karakter</span>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label for="confirmPassword" class="form-label">Konfirmasi Kata Sandi</label>
+                    </div>
+                    <div class="password-field-wrap">
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required minlength="6"
+                            autocomplete="new-password" placeholder="Ulangi kata sandi">
+                        <button type="button" id="toggleConfirmPassword" class="password-toggle-btn" aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi" aria-pressed="false">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <span class="form-error" id="confirmPasswordError">Konfirmasi kata sandi tidak cocok</span>
+                </div>
+
+                <div class="form-summary form-summary--hidden" id="registerErrorSummary" role="alert">
+                    Pendaftaran gagal
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--full auth-card__submit" id="registerBtn">
+                    <span id="registerBtnText">Buat Akun</span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <span>Sudah punya akun?</span>
+                <a id="goLoginLink" href="/login">Masuk</a>
+            </div>
+            <div style="text-align: center; margin-top: 12px; font-size: 0.85rem;">
+                <a href="/" style="color: var(--text-secondary);">&larr; Kembali ke Beranda</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/api.js?v=20261125b"></script>
+    <script src="/js/auth.js?v=20261125b"></script>
+    <script>
+        const form = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const usernameError = document.getElementById('usernameError');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+        const registerErrorSummary = document.getElementById('registerErrorSummary');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerBtnText = document.getElementById('registerBtnText');
+        const goLoginLink = document.getElementById('goLoginLink');
+
+        const params = new URLSearchParams(window.location.search);
+        const redirectParam = params.get('redirect');
+        if (redirectParam && goLoginLink) {
+            goLoginLink.href = `/login?redirect=${encodeURIComponent(redirectParam)}`;
+        }
+
+        function bindToggle(btnId, inputEl) {
+            const btn = document.getElementById(btnId);
+            if (!btn || !inputEl) return;
+            btn.addEventListener('click', () => {
+                const isHidden = inputEl.type === 'password';
+                inputEl.type = isHidden ? 'text' : 'password';
+                btn.setAttribute('aria-pressed', String(isHidden));
+            });
+        }
+
+        bindToggle('toggleRegisterPassword', passwordInput);
+        bindToggle('toggleConfirmPassword', confirmPasswordInput);
+
+        window.FragmaAuth.fetchCurrentUser().then((user) => {
+            if (user) {
+                window.location.replace(window.FragmaAuth.getSafeRedirectUrl('/projects'));
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            [usernameInput, emailInput, passwordInput, confirmPasswordInput].forEach((el) => el.classList.remove('form-input--error'));
+            [usernameError, emailError, passwordError, confirmPasswordError].forEach((el) => el.classList.remove('form-error--visible'));
+            registerErrorSummary.classList.add('form-summary--hidden');
+
+            let hasError = false;
+            const usernameVal = usernameInput.value.trim();
+            const emailVal = emailInput.value.trim();
+            const passwordVal = passwordInput.value;
+            const confirmVal = confirmPasswordInput.value;
+
+            if (!/^[a-zA-Z0-9_-]{3,50}$/.test(usernameVal)) {
+                usernameInput.classList.add('form-input--error');
+                usernameError.classList.add('form-error--visible');
+                hasError = true;
+            }
+
+            if (!emailVal || !emailVal.includes('@')) {
+                emailInput.classList.add('form-input--error');
+                emailError.classList.add('form-error--visible');
+                hasError = true;
+            }
+
+            if (passwordVal.length < 6) {
+                passwordInput.classList.add('form-input--error');
+                passwordError.classList.add('form-error--visible');
+                hasError = true;
+            }
+
+            if (passwordVal !== confirmVal) {
+                confirmPasswordInput.classList.add('form-input--error');
+                confirmPasswordError.classList.add('form-error--visible');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            registerBtn.disabled = true;
+            registerBtnText.textContent = 'Membuat akun...';
+
+            try {
+                await window.FragmaAuth.registerUser(usernameVal, emailVal, passwordVal);
+                window.location.href = window.FragmaAuth.getSafeRedirectUrl('/projects');
+            } catch (err) {
+                registerBtn.disabled = false;
+                registerBtnText.textContent = 'Buat Akun';
+                registerErrorSummary.textContent = err.message || 'Pendaftaran gagal';
+                registerErrorSummary.classList.remove('form-summary--hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

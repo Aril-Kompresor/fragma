@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma | Perangkat</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261125b">
+</head>
+<body data-auth-required="true" data-section="dashboard">
+    <div class="app-shell">
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav">
+                <a href="/projects" class="sidebar__link" id="navProjects">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </a>
+                <a href="/dashboard" class="sidebar__link sidebar__link--active" id="navEntity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    <span>Perangkat</span>
+                </a>
+                <a href="/view" class="sidebar__link" id="navView">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Visualisasi</span>
+                </a>
+                <a href="/flow" class="sidebar__link" id="navFlow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+                    <span>Otomasi</span>
+                </a>
+                <a href="/notifications" class="sidebar__link" id="navNotifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span>Notifikasi</span>
+                </a>
+                <a href="/storage" class="sidebar__link" id="navStorage">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                    <span>Storage</span>
+                </a>
+                <a href="/simulation" class="sidebar__link nav-superadmin-only" id="navSimulation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                    <span>Simulasi</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="tb-top-bar">
+                <div class="tb-breadcrumbs">
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectsRoot">Projects</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectName">Project</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <span class="tb-breadcrumb-item tb-breadcrumb-item--active">Perangkat</span>
+                </div>
+            </div>
+            <div class="tb-sub-bar">
+                <div class="tb-tabs" role="tablist">
+                    <button type="button" class="tb-tab tb-tab--active" id="tabAllEntities" role="tab" aria-selected="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <span>Semua</span>
+                        <span class="tb-tab__count" id="countAllEntities">0</span>
+                    </button>
+                    <button type="button" class="tb-tab" id="tabActiveEntities" role="tab" aria-selected="false">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Aktif</span>
+                        <span class="tb-tab__count" id="countActiveEntities">0</span>
+                    </button>
+                    <button type="button" class="tb-tab" id="tabInactiveEntities" role="tab" aria-selected="false">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                        <span>Nonaktif</span>
+                        <span class="tb-tab__count" id="countInactiveEntities">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="container tb-container">
+                <div class="tb-panel" id="devicesViewPanel">
+                    <div class="tb-toolbar">
+                        <div class="tb-toolbar__left">
+                            <h1 class="tb-toolbar__title">Perangkat</h1>
+                            <label class="tb-switch-label" title="Aktifkan pembaruan otomatis tiap 10 detik">
+                                <input type="checkbox" id="tbPollingToggle" checked>
+                                <span class="tb-switch-slider"></span>
+                                <span>Live polling</span>
+                            </label>
+                        </div>
+                        <div class="tb-toolbar__right">
+                            <div class="tb-search-wrap">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="text" id="tbSearchInput" class="tb-search-input" placeholder="Cari perangkat atau field..." autocomplete="off">
+                            </div>
+                            <button type="button" class="tb-icon-btn" id="tbRefreshBtn" aria-label="Perbarui daftar perangkat" title="Perbarui daftar perangkat">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            </button>
+                            <a href="/create" class="btn btn--primary btn--sm tb-add-btn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                <span>Tambah Perangkat</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="tb-table-container">
+                        <table class="tb-table tb-table--responsive" id="entitiesTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 185px;">Dibuat <span class="tb-sort-arrow">&darr;</span></th>
+                                    <th style="min-width: 200px;">Nama Perangkat</th>
+                                    <th style="width: 110px;">Status</th>
+                                    <th style="width: 110px;">Data Poin</th>
+                                    <th style="width: 140px;">Aktivitas Terakhir</th>
+                                    <th style="width: 130px; text-align: right;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entitiesTableBody"></tbody>
+                        </table>
+
+                        <div id="entitiesLoading" class="tb-table-empty">
+                            <div>Memuat perangkat...</div>
+                        </div>
+
+                        <div id="entitiesEmptyState" class="tb-table-empty" style="display: none;">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px;"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                            <div style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Belum ada perangkat di project ini</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); max-width: 400px; margin: 0 auto 16px auto;">Tambahkan perangkat IoT pertama Anda ke project ini untuk mulai menerima dan memantau data sensor.</div>
+                            <a href="/create" class="btn btn--primary btn--sm tb-add-btn">+ Tambah Perangkat</a>
+                        </div>
+                    </div>
+
+                    <div class="tb-pagination">
+                        <div class="tb-pagination__left">
+                            <span>Baris per halaman:</span>
+                            <select id="itemsPerPageSelect" class="tb-page-select" aria-label="Baris per halaman">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                        <div class="tb-pagination__right">
+                            <span id="tbPaginationInfo" class="tb-pagination__info">0 - 0 dari 0</span>
+                            <div class="tb-pagination__controls">
+                                <button type="button" id="btnPageFirst" class="tb-page-btn" aria-label="Halaman pertama" title="Halaman pertama" disabled>&laquo;</button>
+                                <button type="button" id="btnPagePrev" class="tb-page-btn" aria-label="Halaman sebelumnya" title="Halaman sebelumnya" disabled>&lsaquo;</button>
+                                <button type="button" id="btnPageNext" class="tb-page-btn" aria-label="Halaman berikutnya" title="Halaman berikutnya" disabled>&rsaquo;</button>
+                                <button type="button" id="btnPageLast" class="tb-page-btn" aria-label="Halaman terakhir" title="Halaman terakhir" disabled>&raquo;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-backdrop" id="deleteDeviceModal" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteDeviceModalTitle" style="max-width: 440px;">
+            <div class="modal__header">
+                <h2 class="modal__title" id="deleteDeviceModalTitle" style="color: var(--danger);">Hapus Perangkat</h2>
+                <button type="button" class="modal__close" id="btnCloseDeleteDeviceModal" aria-label="Tutup dialog">&times;</button>
+            </div>
+            <div class="modal__body">
+                <p id="deleteDeviceConfirmText" style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.5; margin: 0;">
+                    Apakah Anda yakin ingin menghapus perangkat ini? Semua riwayat data telemetrinya akan ikut terhapus permanen.
+                </p>
+                <div id="deleteDeviceError" class="form-summary form-summary--hidden" style="margin-top: 12px;"></div>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--ghost" id="btnCancelDeleteDeviceModal">Batal</button>
+                <button type="button" class="btn btn--danger" id="btnConfirmDeleteDevice" style="background: var(--danger); color: #fff; font-weight: 600;">Hapus Perangkat</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/utils.js?v=20261125b"></script>
+    <script src="/js/api.js?v=20261125b"></script>
+    <script src="/js/auth.js?v=20261125b"></script>
+    <script src="/js/app.js?v=20261125b"></script>
+</body>
+</html>

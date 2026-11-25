@@ -3,11 +3,27 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/response.php';
+require_once __DIR__ . '/../includes/auth.php';
+
+handle_cors_preflight();
 
 try {
+    $user = require_role('admin');
     $pdo = get_db();
 
-    $stmt = $pdo->query('SELECT id, fields FROM entities');
+    $body = get_json_input();
+    $projectId = resolve_requested_project_id($pdo, $_GET, $body) ?? 0;
+
+    if ($projectId <= 0) {
+        json_response(400, ['success' => false, 'error' => 'Missing or invalid project identifier']);
+    }
+
+    if (!can_manage_project($pdo, $projectId, $user)) {
+        json_response(403, ['success' => false, 'error' => 'Forbidden: you do not have access to this project']);
+    }
+    $stmt = $pdo->prepare('SELECT id, name, fields FROM entities WHERE project_id = :project_id');
+    $stmt->execute([':project_id' => $projectId]);
+
     $entities = $stmt->fetchAll();
 
     $inserted = 0;
@@ -49,8 +65,9 @@ try {
         $inserted++;
 
         $simulatedData[] = [
-            'entity_id' => $e['id'],
-            'payload'   => $payload,
+            'entity_id'   => $e['id'],
+            'entity_name' => $e['name'] ?? ('Device #' . $e['id']),
+            'payload'     => $payload,
         ];
     }
 

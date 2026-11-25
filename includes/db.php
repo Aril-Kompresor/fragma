@@ -51,6 +51,7 @@ function get_db(): PDO
         return $pdo;
     }
 
+    date_default_timezone_set('UTC');
     load_env_file(__DIR__ . '/../.env');
 
     $host = getenv('DB_HOST') ?: '127.0.0.1';
@@ -68,6 +69,7 @@ function get_db(): PDO
 
     try {
         $pdo = new PDO($dsn, $user, $pass, $options);
+        $pdo->exec("SET time_zone = '+00:00'");
         return $pdo;
     } catch (PDOException $e) {
         json_response(500, [

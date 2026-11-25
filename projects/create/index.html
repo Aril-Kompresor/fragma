@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma | Tambah Perangkat</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261125b">
+</head>
+
+<body data-auth-required="true" data-section="create">
+    <div class="app-shell">
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav">
+                <a href="/projects" class="sidebar__link" id="navProjects">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </a>
+                <a href="/dashboard" class="sidebar__link sidebar__link--active" id="navEntity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>Perangkat</span>
+                </a>
+                <a href="/view" class="sidebar__link" id="navView">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>Visualisasi</span>
+                </a>
+                <a href="/flow" class="sidebar__link" id="navFlow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+                    <span>Otomasi</span>
+                </a>
+                <a href="/notifications" class="sidebar__link" id="navNotifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span>Notifikasi</span>
+                </a>
+                <a href="/storage" class="sidebar__link" id="navStorage">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                    <span>Storage</span>
+                </a>
+                <a href="/simulation" class="sidebar__link nav-superadmin-only" id="navSimulation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    </svg>
+                    <span>Simulasi</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="tb-top-bar">
+                <div class="tb-breadcrumbs">
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectsRoot">Projects</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectName">Project</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <a href="/dashboard" class="tb-breadcrumb-item" id="breadcrumbDevicesLink">Perangkat</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <span class="tb-breadcrumb-item tb-breadcrumb-item--active">Tambah Perangkat</span>
+                </div>
+            </div>
+
+            <div class="container tb-container" style="padding-top: 24px;">
+                <section id="createFormSection">
+                    <div class="page-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h1 class="page-header__title" style="margin: 0 0 6px 0; font-size: 1.5rem;">Tambah Perangkat Baru</h1>
+                            <p class="page-header__subtitle" style="margin: 0; font-size: 0.88rem; color: var(--text-secondary);">
+                                Daftarkan perangkat IoT baru dan dapatkan API key untuk mengirim data telemetri.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="formValidationSummary" class="form-summary form-summary--hidden" role="alert"
+                        aria-live="assertive" tabindex="-1"></div>
+
+                    <form id="createEntityForm" novalidate>
+                        <div class="card" style="margin-bottom: 24px;">
+                            <div class="tb-section-header">
+                                <span class="tb-section-title">Detail Perangkat</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);"><span
+                                        class="form-required">*</span> Wajib diisi</span>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label class="form-label" for="entityNameInput">
+                                    Nama Perangkat <span class="form-required" aria-hidden="true">*</span>
+                                </label>
+                                <input type="text" id="entityNameInput" class="form-input"
+                                    placeholder="contoh: Sensor Suhu Ruang A" aria-required="true" aria-invalid="false"
+                                    aria-describedby="entityNameError" autocomplete="off">
+                                <div id="entityNameError" class="form-error" role="alert" aria-live="polite"></div>
+                            </div>
+
+                            <div class="tb-field-row" style="margin-bottom: 0;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" for="entityProfileInput">Profil Perangkat</label>
+                                    <input type="text" id="entityProfileInput" class="form-input" value="default"
+                                        readonly style="opacity: 0.85; cursor: default; background: var(--bg-input);">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <div class="form-label-row">
+                                        <label class="form-label" for="entityNotesInput">Label / Lokasi</label>
+                                        <span id="entityNotesCounter" class="form-counter" aria-live="polite">0 / 150</span>
+                                    </div>
+                                    <input type="text" id="entityNotesInput" class="form-input" maxlength="150"
+                                        placeholder="contoh: Rak Server 4 atau Kebun Barat" aria-invalid="false"
+                                        aria-describedby="entityNotesError">
+                                    <div id="entityNotesError" class="form-error" role="alert" aria-live="polite"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-bottom: 24px;">
+                            <div class="tb-section-header">
+                                <span class="tb-section-title">Protokol Komunikasi</span>
+                            </div>
+
+                            <div class="tb-transport-grid" style="margin-top: 0;">
+                                <div class="tb-transport-card tb-transport-card--active">
+                                    <div>
+                                        <div class="tb-transport-card__header">
+                                            <div class="tb-transport-card__title-wrap">
+                                                <span class="tb-transport-card__icon">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                                        <path
+                                                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                                                        </path>
+                                                    </svg>
+                                                </span>
+                                                <div>
+                                                    <h2 class="tb-transport-card__title">HTTP / HTTPS</h2>
+                                                    <div style="font-size: 0.72rem; color: var(--text-secondary);">REST API</div>
+                                                </div>
+                                            </div>
+                                            <span class="tb-transport-card__badge tb-transport-card__badge--active">Aktif</span>
+                                        </div>
+                                        <p class="tb-transport-card__desc" style="margin-top: 12px; margin-bottom: 0;">
+                                            Kirim payload JSON langsung melalui POST dengan header X-API-Key. Cocok untuk ESP32, Arduino, Raspberry Pi, Python, dan cURL.
+                                        </p>
+                                    </div>
+                                    <div class="tb-transport-card__specs">
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Protokol:</span>
+                                            <span class="tb-transport-card__spec-value">HTTP/1.1 &amp; HTTPS</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Metode:</span>
+                                            <span class="tb-transport-card__spec-value">POST /api/data.php</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tb-transport-card tb-transport-card--locked">
+                                    <div>
+                                        <div class="tb-transport-card__header">
+                                            <div class="tb-transport-card__title-wrap">
+                                                <span class="tb-transport-card__icon">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                                                        <rect x="9" y="9" width="6" height="6"></rect>
+                                                    </svg>
+                                                </span>
+                                                <div>
+                                                    <h2 class="tb-transport-card__title">MQTT / MQTTS</h2>
+                                                    <div style="font-size: 0.72rem; color: var(--text-muted);">Broker Telemetry</div>
+                                                </div>
+                                            </div>
+                                            <span class="tb-transport-card__badge tb-transport-card__badge--locked">Segera Hadir</span>
+                                        </div>
+                                        <p class="tb-transport-card__desc" style="margin-top: 12px; margin-bottom: 0;">
+                                            Publish/subscribe ringan untuk aliran data frekuensi tinggi.
+                                        </p>
+                                    </div>
+                                    <div class="tb-transport-card__specs">
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Protokol:</span>
+                                            <span class="tb-transport-card__spec-value">MQTT 3.1.1 / 5.0</span>
+                                        </div>
+                                        <div class="tb-transport-card__spec-row">
+                                            <span class="tb-transport-card__spec-label">Port:</span>
+                                            <span class="tb-transport-card__spec-value">1883 / 8883</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="padding: 18px 24px; display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap;">
+                            <a href="/dashboard" id="cancelCreateBtn" class="btn btn--ghost">Batal</a>
+                            <button type="submit" id="submitCreateBtn" class="btn btn--primary">
+                                <span id="submitCreateBtnText">Simpan Perangkat</span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <section id="createSuccessSection" style="display: none;">
+                    <div class="page-header" style="margin-bottom: 24px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                                <span
+                                    style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(46, 204, 113, 0.15); color: var(--success);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </span>
+                                <h1 class="page-header__title"
+                                    style="margin: 0; font-size: 1.5rem; color: var(--success);">Perangkat Berhasil Didaftarkan</h1>
+                            </div>
+                            <p class="page-header__subtitle"
+                                style="margin: 0; font-size: 0.88rem; color: var(--text-secondary);">
+                                Perangkat baru Anda siap menerima data telemetri melalui HTTP/HTTPS.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="tb-section-header">
+                            <span class="tb-section-title">Kredensial Perangkat</span>
+                            <span class="tb-state-badge tb-state-badge--active">Siap Digunakan</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <div class="form-label">Nama Perangkat</div>
+                            <div id="createdDeviceName"
+                                style="font-size: 1.15rem; font-weight: 600; color: var(--text-primary);"></div>
+                        </div>
+                        <div>
+                            <div class="form-label">API Key (X-API-Key)</div>
+                            <div class="code-block"
+                                style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px;">
+                                <span id="createdApiKeyDisplay"
+                                    style="font-size: 0.88rem; word-break: break-all; color: var(--accent);">frag_...</span>
+                                <button type="button" id="copyCreatedKeyBtn" class="btn btn--ghost btn--sm" style="flex-shrink: 0;">Salin Key</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="tb-section-header">
+                            <span class="tb-section-title">Kirim Telemetri via cURL</span>
+                            <button type="button" id="copyCurlBtn" class="btn btn--ghost btn--sm">Salin cURL</button>
+                        </div>
+                        <div class="tb-code-box" id="createdCurlSnippet" style="margin-bottom: 0;"></div>
+                    </div>
+
+                    <div class="card"
+                        style="padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <button type="button" id="createAnotherBtn" class="btn btn--ghost">
+                            <span>+ Tambah Perangkat Lain</span>
+                        </button>
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <a href="/dashboard" id="backToListSuccessBtn" class="btn btn--ghost">Kembali ke Daftar</a>
+                            <a id="goToEntityLink" href="/projects" class="btn btn--primary">Lihat Detail Perangkat</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/utils.js?v=20261125b"></script>
+    <script src="/js/api.js?v=20261125b"></script>
+    <script src="/js/auth.js?v=20261125b"></script>
+    <script src="/js/create.js?v=20261125b"></script>
+</body>
+
+</html>

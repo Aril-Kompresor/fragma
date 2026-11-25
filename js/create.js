@@ -1,8 +1,31 @@
+let createProjectId = 0;
+let createProjectUuid = '';
+
 document.addEventListener('DOMContentLoaded', () => {
     initCreatePage();
 });
 
-function initCreatePage() {
+/** Initialize create device form, validation listeners, and project context. */
+async function initCreatePage() {
+    if (window.FragmaAuth && typeof window.FragmaAuth.requireActiveProject === 'function') {
+        const project = await window.FragmaAuth.requireActiveProject();
+        if (!project) return;
+        createProjectId = project.id;
+        createProjectUuid = project.uuid;
+        const breadcrumbProj = document.getElementById('breadcrumbProjectName');
+        if (breadcrumbProj) {
+            breadcrumbProj.textContent = project.name;
+        }
+        const subtitleEl = document.querySelector('#createFormSection .page-header__subtitle');
+        if (subtitleEl) {
+            subtitleEl.textContent = `Tambahkan perangkat IoT baru ke project "${project.name}" dan dapatkan API key-nya.`;
+        }
+        const dashboardUrl = window.FragmaAuth.buildProjectUrl(createProjectUuid, 'dashboard');
+        document.querySelectorAll('#breadcrumbProjectName, #breadcrumbDevicesLink, #cancelCreateBtn, #backToListSuccessBtn').forEach(link => {
+            link.setAttribute('href', dashboardUrl);
+        });
+    }
+
     const form = document.getElementById('createEntityForm');
     const nameInput = document.getElementById('entityNameInput');
     const nameError = document.getElementById('entityNameError');
@@ -11,7 +34,6 @@ function initCreatePage() {
     const notesCounter = document.getElementById('entityNotesCounter');
     const copyKeyBtn = document.getElementById('copyCreatedKeyBtn');
     const copyCurlBtn = document.getElementById('copyCurlBtn');
-    const headerSubmitBtn = document.getElementById('headerSubmitCreateBtn');
     const createAnotherBtn = document.getElementById('createAnotherBtn');
 
     if (nameInput) {
@@ -47,16 +69,6 @@ function initCreatePage() {
         });
     }
 
-    if (headerSubmitBtn && form) {
-        headerSubmitBtn.addEventListener('click', () => {
-            if (typeof form.requestSubmit === 'function') {
-                form.requestSubmit();
-            } else {
-                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-            }
-        });
-    }
-
     if (form) {
         form.addEventListener('submit', handleCreateEntitySubmit);
     }
@@ -84,6 +96,7 @@ function initCreatePage() {
     }
 }
 
+/** Reset form fields and return to the creation form view. */
 function resetCreatePage() {
     const form = document.getElementById('createEntityForm');
     const formSection = document.getElementById('createFormSection');
@@ -107,27 +120,30 @@ function resetCreatePage() {
     }
 }
 
+/** Validate device name length and allowed characters. */
 function validateEntityName(name) {
     const trimmed = name.trim();
     if (!trimmed) {
-        return { valid: false, error: 'Device name is required.' };
+        return { valid: false, error: 'Nama perangkat wajib diisi.' };
     }
     if (trimmed.length < 3 || trimmed.length > 50) {
-        return { valid: false, error: 'Device name must be between 3 and 50 characters.' };
+        return { valid: false, error: 'Nama perangkat harus antara 3 hingga 50 karakter.' };
     }
     if (!/^[a-zA-Z0-9\s_-]+$/.test(trimmed)) {
-        return { valid: false, error: 'Device name may only contain letters, numbers, spaces, hyphens, and underscores.' };
+        return { valid: false, error: 'Nama perangkat hanya boleh berisi huruf, angka, spasi, tanda hubung, dan garis bawah.' };
     }
     return { valid: true };
 }
 
+/** Validate optional location/label notes length. */
 function validateEntityNotes(notes) {
     if (notes.length > 150) {
-        return { valid: false, error: 'Location notes cannot exceed 150 characters.' };
+        return { valid: false, error: 'Catatan lokasi maksimal 150 karakter.' };
     }
     return { valid: true };
 }
 
+/** Mark an input element as invalid with an accessible error message. */
 function setFieldError(inputEl, errorEl, errorMessage) {
     if (!inputEl || !errorEl) return;
     const errorClass = inputEl.tagName === 'SELECT' ? 'form-select--error' : (inputEl.tagName === 'TEXTAREA' ? 'form-textarea--error' : 'form-input--error');
@@ -137,6 +153,7 @@ function setFieldError(inputEl, errorEl, errorMessage) {
     errorEl.classList.add('form-error--visible');
 }
 
+/** Clear invalid state and error message on an input element. */
 function clearFieldError(inputEl, errorEl) {
     if (!inputEl || !errorEl) return;
     inputEl.classList.remove('form-input--error', 'form-select--error', 'form-textarea--error');
@@ -145,6 +162,7 @@ function clearFieldError(inputEl, errorEl) {
     errorEl.classList.remove('form-error--visible');
 }
 
+/** Clear all validation errors and summary banner on the create form. */
 function clearAllCreateFormErrors() {
     const fields = [
         { inputId: 'entityNameInput', errorId: 'entityNameError' },
@@ -164,6 +182,7 @@ function clearAllCreateFormErrors() {
     }
 }
 
+/** Validate the entire create device form before submitting. */
 function validateEntireCreateForm() {
     clearAllCreateFormErrors();
 
@@ -194,7 +213,7 @@ function validateEntireCreateForm() {
 
     if (errors.length > 0) {
         if (summaryEl) {
-            summaryEl.textContent = `Please correct the ${errors.length} highlighted error(s) below before submitting.`;
+            summaryEl.textContent = `Harap perbaiki ${errors.length} kesalahan di bawah sebelum menyimpan.`;
             summaryEl.classList.remove('form-summary--hidden');
         }
         if (firstInvalidElement) {
@@ -206,6 +225,7 @@ function validateEntireCreateForm() {
     return true;
 }
 
+/** Submit create device request with name, notes, and project_id to the backend API. */
 async function handleCreateEntitySubmit(e) {
     e.preventDefault();
     if (!validateEntireCreateForm()) {
@@ -214,47 +234,42 @@ async function handleCreateEntitySubmit(e) {
 
     const submitBtn = document.getElementById('submitCreateBtn');
     const submitBtnText = document.getElementById('submitCreateBtnText');
-    const headerSubmitBtn = document.getElementById('headerSubmitCreateBtn');
     const nameInput = document.getElementById('entityNameInput');
+    const notesInput = document.getElementById('entityNotesInput');
     const summaryEl = document.getElementById('formValidationSummary');
 
     const name = nameInput.value.trim();
+    const notes = notesInput ? notesInput.value.trim() : '';
 
     try {
         if (submitBtn) submitBtn.disabled = true;
-        if (headerSubmitBtn) {
-            headerSubmitBtn.disabled = true;
-            const span = headerSubmitBtn.querySelector('span');
-            if (span) span.textContent = 'Adding...';
-        }
-        if (submitBtnText) submitBtnText.textContent = 'Adding...';
+        if (submitBtnText) submitBtnText.textContent = 'Menyimpan...';
+
+        const active = window.FragmaAuth && typeof window.FragmaAuth.getActiveProject === 'function'
+            ? window.FragmaAuth.getActiveProject()
+            : null;
+        const targetProjectUuid = createProjectUuid || (active ? active.uuid : '');
 
         const newEntity = await apiFetch('/entities.php', {
             method: 'POST',
-            body: { name, fields: [] }
+            body: { name, notes, fields: [], project_uuid: targetProjectUuid }
         });
 
         saveLocalApiKey(newEntity.id, newEntity.api_key);
         showCreationSuccess(newEntity);
     } catch (err) {
         if (summaryEl) {
-            summaryEl.textContent = `Server error: ${err.message}`;
+            summaryEl.textContent = `Gagal menyimpan: ${err.message}`;
             summaryEl.classList.remove('form-summary--hidden');
             summaryEl.focus();
-        } else {
-            alert(`Failed to create device: ${err.message}`);
         }
     } finally {
         if (submitBtn) submitBtn.disabled = false;
-        if (headerSubmitBtn) {
-            headerSubmitBtn.disabled = false;
-            const span = headerSubmitBtn.querySelector('span');
-            if (span) span.textContent = 'Add Device';
-        }
-        if (submitBtnText) submitBtnText.textContent = 'Add Device';
+        if (submitBtnText) submitBtnText.textContent = 'Simpan Perangkat';
     }
 }
 
+/** Display created device credentials and connection snippet. */
 function showCreationSuccess(entity) {
     const formSection = document.getElementById('createFormSection');
     const successSection = document.getElementById('createSuccessSection');
@@ -270,7 +285,8 @@ function showCreationSuccess(entity) {
     if (curlSnippet) curlSnippet.textContent = curlCmd;
 
     if (viewDeviceLink) {
-        viewDeviceLink.href = `/entity/index.html?id=${entity.id}`;
+        const pUuid = entity.project_uuid || createProjectUuid;
+        viewDeviceLink.href = pUuid ? window.FragmaAuth.buildProjectUrl(pUuid, 'entity', entity.id) : '/projects';
     }
 
     if (formSection) formSection.style.display = 'none';

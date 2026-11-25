@@ -1,64 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fragma: Public IoT Dashboard</title>
+    <title>Fragma | Platform Monitoring IoT</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=20261021c">
+    <link rel="stylesheet" href="/css/style.css?v=20261125b">
 </head>
-<body>
+<body data-auth-public-nav="true">
     <nav class="navbar">
         <a href="/" class="navbar__brand">
-            <span class="navbar__logo-dot"></span>
+            <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
             <span>Fragma</span>
         </a>
         <div class="navbar__links">
-            <a href="/dashboard/index.html" class="navbar__link">Dashboard</a>
-            <a href="/docs/index.html" class="navbar__link">API Docs</a>
-            <a href="/dashboard/index.html" class="btn btn--primary btn--sm">Launch App</a>
+            <a href="/login" class="navbar__link nav-auth-item">Masuk</a>
+            <a href="/register" class="btn btn--primary btn--sm nav-auth-item">Daftar</a>
         </div>
     </nav>
 
     <main class="container">
         <section class="hero">
-            <h1 class="hero__title">Connect IoT devices.<br>Visualize data in <span>seconds</span>.</h1>
+            <h1 class="hero__title">Hubungkan perangkat IoT.<br>Pantau data dalam <span>hitungan detik</span>.</h1>
             <p class="hero__subtitle">
-                Create data entities, push sensor readings via REST API with simple API keys, and build custom live charts and metric cards without complex setup.
+                Kelompokkan perangkat per project, kirim data sensor lewat REST API dengan API key terisolasi, lalu tampilkan grafik, gauge, dan aturan otomasi secara langsung.
             </p>
             <div class="hero__actions">
-                <a href="/dashboard/index.html" class="btn btn--primary btn--lg">Go to Dashboard</a>
-                <a href="/docs/index.html" class="btn btn--ghost btn--lg">View API Docs</a>
+                <a id="heroStartBtn" href="/login" class="btn btn--primary btn--lg">Mulai Sekarang</a>
+                <a href="#cara-kerja" class="btn btn--ghost btn--lg">Lihat Cara Kerja</a>
             </div>
         </section>
 
-        <section class="landing-steps">
+        <section id="cara-kerja" class="landing-steps">
             <div class="landing-steps__header">
-                <h2 class="landing-steps__title">How Fragma Works</h2>
+                <h2 class="landing-steps__title">Alur Kerja Fragma</h2>
             </div>
             <div class="grid grid--3">
                 <div class="step-card">
-                    <div class="step-card__title">Create Entity</div>
-                    <div class="step-card__text">Define your device entity and the fields it emits (e.g. temperature, humidity, voltage). You instantly receive a secure device API key.</div>
+                    <div class="step-card__title">1. Masuk dan Pilih Project</div>
+                    <div class="step-card__text">Masuk ke akun Anda, buat atau pilih ruang kerja project agar perangkat, grafik, dan otomasi tertata terpisah per proyek.</div>
                 </div>
 
                 <div class="step-card">
-                    <div class="step-card__title">Connect Device</div>
-                    <div class="step-card__text">POST JSON telemetry directly from ESP32, Arduino, Raspberry Pi, Python scripts, or curl requests with a single HTTP header.</div>
+                    <div class="step-card__title">2. Daftarkan Perangkat</div>
+                    <div class="step-card__text">Tambahkan perangkat baru dan terima API key langsung. Kirim JSON telemetri dari ESP32, Arduino, Python, atau cURL ke endpoint data.</div>
                 </div>
 
                 <div class="step-card">
-                    <div class="step-card__title">Visualize Telemetry</div>
-                    <div class="step-card__text">Add Line Charts and Value Cards to your entity dashboard. Live polling updates your sensor readings seamlessly in real-time.</div>
+                    <div class="step-card__title">3. Visualisasi dan Otomasi</div>
+                    <div class="step-card__text">Susun Line Chart, Value Card, dan Gauge Meter di halaman Visualisasi serta aktifkan logika IF/SET/ALERT di halaman Otomasi.</div>
                 </div>
             </div>
         </section>
     </main>
 
     <footer class="footer">
-        <div>Fragma IoT Dashboard &bull; Public, lightweight, and framework-free</div>
+        <div>Fragma IoT Dashboard &bull; Ringan dan bebas framework &bull; <a href="/erd">Skema Database</a></div>
     </footer>
+    <script src="/js/api.js?v=20261125b"></script>
+    <script src="/js/auth.js?v=20261125b"></script>
 </body>
 </html>

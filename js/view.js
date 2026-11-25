@@ -2,59 +2,125 @@ let allEntities = [];
 let allWidgets = [];
 let entityDataCache = {};
 let viewPollingIntervalId = null;
+let isViewPollingEnabled = true;
 let selectedVariant = null;
+let pendingDeleteWidgetId = null;
+let currentViewProjectId = 0;
+let currentViewProjectUuid = '';
+let currentViewProjectName = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     initViewPage();
 });
 
-function initViewPage() {
-    setupAddVisualForm();
-    loadGlobalView();
-
-    if (viewPollingIntervalId) {
-        clearInterval(viewPollingIntervalId);
+/** Initialize Visualisasi dashboard, controls, modals, and live polling. */
+async function initViewPage() {
+    if (window.FragmaAuth && typeof window.FragmaAuth.requireActiveProject === 'function') {
+        const project = await window.FragmaAuth.requireActiveProject();
+        if (!project) return;
+        currentViewProjectId = project.id;
+        currentViewProjectUuid = project.uuid;
+        currentViewProjectName = project.name || 'Project';
+        const titleEl = document.getElementById('viewPageTitle');
+        const subEl = document.getElementById('viewPageSubtitle');
+        const crumbEl = document.getElementById('breadcrumbProjectName');
+        if (titleEl) titleEl.textContent = `Visualisasi - ${currentViewProjectName}`;
+        if (subEl) subEl.textContent = `Pantau grafik dan pembacaan sensor secara langsung khusus untuk project ${currentViewProjectName}.`;
+        if (crumbEl) crumbEl.textContent = currentViewProjectName;
     }
-    viewPollingIntervalId = setInterval(refreshGlobalView, 10000);
+
+    setupViewControls();
+    setupAddVisualForm();
+    setupDeleteWidgetModal();
+    await loadGlobalView();
+    startViewPolling();
 
     window.addEventListener('beforeunload', () => {
-        if (viewPollingIntervalId) {
-            clearInterval(viewPollingIntervalId);
-        }
+        stopViewPolling();
     });
 }
 
+/** Start periodic polling for widget data updates. */
+function startViewPolling() {
+    stopViewPolling();
+    if (!isViewPollingEnabled) return;
+    viewPollingIntervalId = setInterval(refreshGlobalView, 10000);
+}
+
+/** Stop periodic widget polling. */
+function stopViewPolling() {
+    if (viewPollingIntervalId) {
+        clearInterval(viewPollingIntervalId);
+        viewPollingIntervalId = null;
+    }
+}
+
+/** Bind header refresh and live polling controls. */
+function setupViewControls() {
+    const toggle = document.getElementById('viewPollingToggle');
+    const refreshBtn = document.getElementById('refreshViewBtn');
+
+    if (toggle) {
+        toggle.addEventListener('change', () => {
+            isViewPollingEnabled = toggle.checked;
+            if (isViewPollingEnabled) {
+                startViewPolling();
+            } else {
+                stopViewPolling();
+            }
+        });
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+            refreshBtn.disabled = true;
+            await refreshGlobalView();
+            refreshBtn.disabled = false;
+        });
+    }
+}
+
+/** Load project entities, widgets, and initial telemetry for the canvas. */
 async function loadGlobalView() {
+    if (!currentViewProjectUuid) return;
     try {
-        const entitiesReq = apiFetch('/entities.php');
-        const widgetsReq = apiFetch('/widgets.php');
-        
+        const entitiesReq = apiFetch(`/entities.php?project_uuid=${encodeURIComponent(currentViewProjectUuid)}`);
+        const widgetsReq = apiFetch(`/widgets.php?project_uuid=${encodeURIComponent(currentViewProjectUuid)}`);
+
         const [entities, widgets] = await Promise.all([entitiesReq, widgetsReq]);
-        
+
         allEntities = Array.isArray(entities) ? entities : [];
         allWidgets = Array.isArray(widgets) ? widgets : [];
-        
+
         populateEntitySelect();
         await fetchAllNeededData();
         renderGlobalWidgets();
     } catch (err) {
+        const container = document.getElementById('globalWidgetsGrid');
+        if (container) {
+            container.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><div class="empty-state__title">Gagal Memuat Visualisasi</div><div class="empty-state__text">${escapeHtml(err.message || 'Terjadi kesalahan jaringan.')}</div></div>`;
+        }
     }
 }
 
+/** Refresh widgets and telemetry without resetting canvas positions. */
 async function refreshGlobalView() {
+    if (!currentViewProjectUuid) return;
     try {
-        const widgets = await apiFetch('/widgets.php');
+        const widgets = await apiFetch(`/widgets.php?project_uuid=${encodeURIComponent(currentViewProjectUuid)}`);
         allWidgets = Array.isArray(widgets) ? widgets : [];
-        
+
         await fetchAllNeededData();
         renderGlobalWidgets();
     } catch (err) {
+        return;
     }
 }
 
+/** Fetch recent telemetry payloads for every entity referenced by a widget. */
 async function fetchAllNeededData() {
     const neededEntityIds = [...new Set(allWidgets.map(w => w.entity_id))];
-    
+
     const fetchPromises = neededEntityIds.map(async (eid) => {
         try {
             const data = await apiFetch(`/data.php?entity_id=${eid}&limit=50`);
@@ -63,42 +129,58 @@ async function fetchAllNeededData() {
             entityDataCache[eid] = [];
         }
     });
-    
+
     await Promise.all(fetchPromises);
 }
 
+/** Render widgets or an actionable empty state on the dashboard canvas. */
 function renderGlobalWidgets() {
     const container = document.getElementById('globalWidgetsGrid');
     const loading = document.getElementById('globalWidgetsLoading');
-    
+
     if (loading) loading.style.display = 'none';
     if (!container) return;
 
     if (allWidgets.length === 0) {
+        const noDevices = allEntities.length === 0;
+        const hint = noDevices
+            ? `Project "${escapeHtml(currentViewProjectName)}" belum memiliki perangkat. Tambahkan perangkat terlebih dahulu di menu Perangkat.`
+            : `Tambahkan grafik, kartu metrik, atau gauge untuk memantau sensor di project "${escapeHtml(currentViewProjectName)}".`;
+        const createUrl = window.FragmaAuth.buildProjectUrl(currentViewProjectUuid, 'create');
+        const actionHtml = noDevices
+            ? `<a href="${createUrl}" class="btn btn--primary btn--sm">+ Tambah Perangkat</a>`
+            : `<button type="button" class="btn btn--primary btn--sm" id="emptyAddWidgetBtn">+ Tambah Widget</button>`;
+
         container.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1;">
-                <div class="empty-state__icon">📈</div>
-                <div class="empty-state__title">No Visuals Yet</div>
-                <div class="empty-state__text">Add visuals from your entities to build a unified global dashboard.</div>
+            <div class="empty-state" style="grid-column: 1 / -1; margin: 24px;">
+                <div style="margin-bottom: 12px; color: var(--text-muted);">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </div>
+                <div class="empty-state__title">Belum Ada Widget di Project Ini</div>
+                <div class="empty-state__text">${hint}</div>
+                ${actionHtml}
             </div>
         `;
+        const emptyBtn = document.getElementById('emptyAddWidgetBtn');
+        const fabBtn = document.getElementById('fabAddWidget');
+        if (emptyBtn && fabBtn) {
+            emptyBtn.addEventListener('click', () => fabBtn.click());
+        }
         return;
     }
 
-    if (!container.classList.contains('grid-canvas')) {
-        container.innerHTML = '';
-        container.className = 'grid-canvas';
-        container.style.position = 'relative';
-        container.style.width = '100%';
-        container.style.minHeight = '600px';
+    const existingEmpty = container.querySelector('.empty-state');
+    if (existingEmpty) {
+        existingEmpty.remove();
     }
-    
+
     const currentWidgetIds = new Set(allWidgets.map(w => w.id));
     Array.from(container.children).forEach(child => {
         if (child.id && child.id.startsWith('global-widget-')) {
             const id = parseInt(child.id.replace('global-widget-', ''), 10);
             if (!currentWidgetIds.has(id)) {
                 if (typeof destroyChartInstance === 'function') destroyChartInstance(id);
+                if (typeof destroyGaugeInstance === 'function') destroyGaugeInstance(id);
                 child.remove();
             }
         }
@@ -107,7 +189,7 @@ function renderGlobalWidgets() {
     allWidgets.forEach(widget => {
         const wrapperId = `global-widget-${widget.id}`;
         let widgetWrapper = document.getElementById(wrapperId);
-        
+
         const dataPoints = entityDataCache[widget.entity_id] || [];
 
         if (widgetWrapper) {
@@ -118,19 +200,17 @@ function renderGlobalWidgets() {
             widgetWrapper = document.createElement('div');
             widgetWrapper.id = wrapperId;
             widgetWrapper.className = 'draggable-widget';
-            
-            const layout = widget.config.layout || {
-                x: 0,
-                y: 0,
-                w: widget.type === 'line-chart' ? 450 : 280,
-                h: widget.type === 'line-chart' ? 300 : 180
-            };
+
+            if (!widget.config.layout || typeof widget.config.layout.x !== 'number') {
+                widget.config.layout = calculateNextWidgetPosition(widget.type, widget.id);
+            }
+            const layout = widget.config.layout;
 
             widgetWrapper.style.left = layout.x + 'px';
             widgetWrapper.style.top = layout.y + 'px';
             widgetWrapper.style.width = layout.w + 'px';
             widgetWrapper.style.height = layout.h + 'px';
-            
+
             const configCopy = { ...widget.config };
             if (widget.entity_name) {
                 configCopy.label = `${widget.entity_name}: ${configCopy.label}`;
@@ -154,12 +234,14 @@ function renderGlobalWidgets() {
                         body: { config: widget.config }
                     });
                 } catch (e) {
+                    return;
                 }
             });
         }
     });
 }
 
+/** Set up the 3-step widget picker modal and form bindings. */
 function setupAddVisualForm() {
     const form = document.getElementById('addVisualForm');
     const entitySelect = document.getElementById('visualEntitySelect');
@@ -171,65 +253,46 @@ function setupAddVisualForm() {
 
     const widgetBundles = {
         charts: {
-            title: 'Charts',
+            title: 'Grafik & Meter',
             widgets: [
                 {
                     type: 'line-chart',
                     name: 'Time Series Chart',
-                    tag: 'series',
+                    tag: 'grafik area',
                     variant: 'area',
                     preview: '<svg width="120" height="60" viewBox="0 0 120 60" fill="none"><polyline points="5,50 20,30 40,40 60,15 80,25 100,5 115,20" stroke="#4ecdc4" stroke-width="2" fill="none"/><polyline points="5,55 20,42 40,48 60,30 80,38 100,22 115,35" stroke="#e74c6f" stroke-width="1.5" fill="none" opacity="0.5"/></svg>'
                 },
                 {
                     type: 'line-chart',
                     name: 'Line Chart',
-                    tag: 'series',
+                    tag: 'garis',
                     variant: 'line',
                     preview: '<svg width="120" height="60" viewBox="0 0 120 60" fill="none"><polyline points="5,45 30,20 60,35 90,10 115,30" stroke="#2ecc71" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>'
                 },
                 {
                     type: 'gauge',
                     name: 'Gauge Meter',
-                    tag: 'latest',
+                    tag: 'meter',
                     preview: '<svg width="120" height="60" viewBox="0 0 120 60"><path d="M 25 50 A 35 35 0 0 1 95 50" stroke="rgba(30,30,46,0.8)" stroke-width="10" stroke-linecap="round" fill="none"/><path d="M 25 50 A 35 35 0 0 1 65 18" stroke="#4ecdc4" stroke-width="10" stroke-linecap="round" fill="none"/></svg>'
-                },
-                {
-                    type: 'line-chart',
-                    name: 'Bar Chart',
-                    tag: 'latest',
-                    disabled: true,
-                    preview: '<svg width="120" height="60" viewBox="0 0 120 60" fill="none"><rect x="10" y="20" width="16" height="38" rx="2" fill="#4ecdc4" opacity="0.7"/><rect x="32" y="10" width="16" height="48" rx="2" fill="#4ecdc4" opacity="0.85"/><rect x="54" y="30" width="16" height="28" rx="2" fill="#4ecdc4" opacity="0.6"/><rect x="76" y="5" width="16" height="53" rx="2" fill="#4ecdc4"/><rect x="98" y="25" width="16" height="33" rx="2" fill="#4ecdc4" opacity="0.75"/></svg>'
                 }
             ]
         },
         counters: {
-            title: 'Count Widgets',
+            title: 'Kartu Metrik',
             widgets: [
                 {
                     type: 'value-card',
-                    name: 'Alarm Count',
-                    tag: 'latest',
+                    name: 'Kartu Alarm',
+                    tag: 'nilai',
                     variant: 'alarm',
-                    preview: '<div style="text-align:center;display:flex;align-items:center;gap:10px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e74c6f" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><div><div style="font-size:2rem;font-weight:700;color:#e74c6f;line-height:1">3</div><div style="font-size:0.6rem;color:var(--text-muted)">Active</div></div></div>'
+                    preview: '<div style="text-align:center;display:flex;align-items:center;gap:10px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e74c6f" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><div><div style="font-size:2rem;font-weight:700;color:#e74c6f;line-height:1">3</div><div style="font-size:0.6rem;color:var(--text-muted)">Aktif</div></div></div>'
                 },
                 {
                     type: 'value-card',
-                    name: 'Entity Count',
-                    tag: 'latest',
+                    name: 'Kartu Nilai',
+                    tag: 'nilai',
                     variant: 'entity',
-                    preview: '<div style="text-align:center;display:flex;align-items:center;gap:10px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ecdc4" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><div><div style="font-size:2rem;font-weight:700;color:#4ecdc4;line-height:1">296</div><div style="font-size:0.6rem;color:var(--text-muted)">Devices</div></div></div>'
-                }
-            ]
-        },
-        controls: {
-            title: 'Control Widgets',
-            widgets: [
-                {
-                    type: 'toggle-switch',
-                    name: 'Toggle Switch',
-                    tag: 'action',
-                    disabled: true,
-                    preview: '<div style="display:flex;align-items:center;justify-content:center;height:100%"><svg width="60" height="32" viewBox="0 0 60 32" fill="none"><rect width="60" height="32" rx="16" fill="var(--accent)" opacity="0.8"/><circle cx="44" cy="16" r="12" fill="#fff"/></svg></div>'
+                    preview: '<div style="text-align:center;display:flex;align-items:center;gap:10px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ecdc4" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><div><div style="font-size:2rem;font-weight:700;color:#4ecdc4;line-height:1">296</div><div style="font-size:0.6rem;color:var(--text-muted)">Sensor</div></div></div>'
                 }
             ]
         }
@@ -243,6 +306,11 @@ function setupAddVisualForm() {
 
     function closeModal() {
         modal.style.display = 'none';
+        const errBox = document.getElementById('addVisualError');
+        if (errBox) {
+            errBox.textContent = '';
+            errBox.classList.add('form-summary--hidden');
+        }
         showStep(1);
     }
 
@@ -255,8 +323,10 @@ function setupAddVisualForm() {
         grid.innerHTML = '';
 
         bundle.widgets.forEach(w => {
-            const card = document.createElement('div');
-            card.className = 'subwidget-card' + (w.disabled ? ' disabled' : '');
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'subwidget-card';
+            card.style.textAlign = 'left';
 
             const preview = document.createElement('div');
             preview.className = 'subwidget-card__preview';
@@ -269,19 +339,23 @@ function setupAddVisualForm() {
             card.appendChild(preview);
             card.appendChild(info);
 
-            if (!w.disabled) {
-                card.addEventListener('click', () => {
-                    document.getElementById('visualTypeSelect').value = w.type;
-                    document.getElementById('pickerStep3Title').textContent = w.name;
-                    document.getElementById('visualLabelInput').placeholder = `e.g. ${w.name}`;
-                    selectedVariant = w.variant || null;
-                    
-                    const gaugeGroup = document.getElementById('gaugeConfigGroup');
-                    if (gaugeGroup) gaugeGroup.style.display = w.type === 'gauge' ? 'block' : 'none';
-                    
-                    showStep(3);
-                });
-            }
+            card.addEventListener('click', () => {
+                document.getElementById('visualTypeSelect').value = w.type;
+                document.getElementById('pickerStep3Title').textContent = w.name;
+                document.getElementById('visualLabelInput').placeholder = `contoh: ${w.name}`;
+                selectedVariant = w.variant || null;
+
+                const gaugeGroup = document.getElementById('gaugeConfigGroup');
+                if (gaugeGroup) gaugeGroup.style.display = w.type === 'gauge' ? 'block' : 'none';
+
+                const errBox = document.getElementById('addVisualError');
+                if (errBox) {
+                    errBox.textContent = '';
+                    errBox.classList.add('form-summary--hidden');
+                }
+
+                showStep(3);
+            });
 
             grid.appendChild(card);
         });
@@ -300,9 +374,16 @@ function setupAddVisualForm() {
         if (btn) btn.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-    });
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display !== 'none') {
+                closeModal();
+            }
+        });
+    }
 
     document.querySelectorAll('.bundle-card').forEach(card => {
         card.addEventListener('click', () => openBundle(card.dataset.bundle));
@@ -337,11 +418,12 @@ function setupAddVisualForm() {
     }
 }
 
+/** Populate device dropdown options inside the Add Widget form. */
 function populateEntitySelect() {
     const select = document.getElementById('visualEntitySelect');
     if (!select) return;
 
-    select.innerHTML = '<option value="">-- Choose Entity --</option>';
+    select.innerHTML = '<option value="">-- Pilih Perangkat --</option>';
     allEntities.forEach(e => {
         const opt = document.createElement('option');
         opt.value = e.id;
@@ -350,13 +432,14 @@ function populateEntitySelect() {
     });
 }
 
+/** Populate field options for the chosen device. */
 function populateFieldSelect(entityId) {
     const select = document.getElementById('visualFieldSelect');
     if (!select) return;
 
     select.innerHTML = '';
     const entity = allEntities.find(e => e.id === entityId);
-    
+
     if (!entity || !Array.isArray(entity.fields) || entity.fields.length === 0) {
         const opt = document.createElement('option');
         opt.value = 'value';
@@ -373,6 +456,59 @@ function populateFieldSelect(entityId) {
     });
 }
 
+/** Calculate the next non-overlapping position on the canvas for a widget. */
+function calculateNextWidgetPosition(type, excludeWidgetId = null) {
+    const isLineChart = type === 'line-chart';
+    const newW = isLineChart ? 460 : 280;
+    const newH = isLineChart ? 300 : 180;
+    const SNAP = 20;
+    const GAP = 20;
+    const startX = 40;
+    const startY = 20;
+
+    const container = document.getElementById('globalWidgetsGrid');
+    const containerWidth = container && container.clientWidth > 500 ? container.clientWidth - 40 : 1200;
+
+    const existingBoxes = allWidgets
+        .filter(w => !excludeWidgetId || w.id !== excludeWidgetId)
+        .map(w => {
+            const l = (w.config && w.config.layout) ? w.config.layout : null;
+            const defW = w.type === 'line-chart' ? 460 : 280;
+            const defH = w.type === 'line-chart' ? 300 : 180;
+            return {
+                x: l && typeof l.x === 'number' ? l.x : 0,
+                y: l && typeof l.y === 'number' ? l.y : 0,
+                w: l && typeof l.w === 'number' ? l.w : defW,
+                h: l && typeof l.h === 'number' ? l.h : defH
+            };
+        });
+
+    for (let y = startY; y <= 5000; y += SNAP) {
+        for (let x = startX; x + newW <= containerWidth; x += SNAP) {
+            let collision = false;
+            for (const b of existingBoxes) {
+                if (!(x + newW + GAP <= b.x || x >= b.x + b.w + GAP || y + newH + GAP <= b.y || y >= b.y + b.h + GAP)) {
+                    collision = true;
+                    break;
+                }
+            }
+            if (!collision) {
+                return { x, y, w: newW, h: newH };
+            }
+        }
+    }
+
+    let maxBottom = startY;
+    existingBoxes.forEach(b => {
+        if (b.y + b.h > maxBottom) {
+            maxBottom = b.y + b.h;
+        }
+    });
+    const fallbackY = Math.ceil((maxBottom + GAP) / SNAP) * SNAP;
+    return { x: startX, y: fallbackY, w: newW, h: newH };
+}
+
+/** Submit new widget configuration and reload canvas state without full page reload. */
 async function handleAddVisualSubmit(e) {
     e.preventDefault();
     const entityId = document.getElementById('visualEntitySelect').value;
@@ -381,25 +517,36 @@ async function handleAddVisualSubmit(e) {
     const label = document.getElementById('visualLabelInput').value.trim();
     const color = document.getElementById('visualColorInput').value;
     const submitBtn = document.getElementById('submitAddVisualBtn');
+    const errBox = document.getElementById('addVisualError');
+
+    if (errBox) {
+        errBox.textContent = '';
+        errBox.classList.add('form-summary--hidden');
+    }
 
     if (!entityId) {
-        alert('Please select an entity first.');
+        if (errBox) {
+            errBox.textContent = 'Harap pilih perangkat terlebih dahulu.';
+            errBox.classList.remove('form-summary--hidden');
+        }
         return;
     }
 
     try {
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Adding...';
+            submitBtn.textContent = 'Menambahkan...';
         }
 
+        const newLayout = calculateNextWidgetPosition(type);
         const widgetConfig = {
             field,
             label: label || field,
-            color: color || '#4ecdc4'
+            color: color || '#4ecdc4',
+            layout: newLayout
         };
         if (selectedVariant) widgetConfig.variant = selectedVariant;
-        
+
         if (type === 'gauge') {
             const minInput = document.getElementById('visualMinInput');
             const maxInput = document.getElementById('visualMaxInput');
@@ -416,30 +563,97 @@ async function handleAddVisualSubmit(e) {
         });
 
         document.getElementById('visualLabelInput').value = '';
-        
+
         const modal = document.getElementById('addWidgetModal');
         if (modal) modal.style.display = 'none';
-        
+
         await loadGlobalView();
     } catch (err) {
-        alert(`Failed to add visual: ${err.message}`);
+        if (errBox) {
+            errBox.textContent = `Gagal menambahkan widget: ${err.message}`;
+            errBox.classList.remove('form-summary--hidden');
+        }
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Add Visual';
+            submitBtn.textContent = 'Tambahkan ke Dashboard';
         }
     }
 }
 
-async function removeGlobalWidget(widgetId) {
-    if (!confirm('Remove this visual from the dashboard?')) return;
+/** Open confirmation modal to remove a widget from the canvas. */
+function removeGlobalWidget(widgetId) {
+    pendingDeleteWidgetId = widgetId;
+    const modal = document.getElementById('deleteWidgetModal');
+    const errBox = document.getElementById('deleteWidgetError');
+    if (errBox) {
+        errBox.textContent = '';
+        errBox.classList.add('form-summary--hidden');
+    }
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('modal-backdrop--open');
+    }
+}
 
-    try {
-        await apiFetch(`/widgets.php?id=${widgetId}`, {
-            method: 'DELETE'
+/** Set up event handlers for delete widget confirmation modal. */
+function setupDeleteWidgetModal() {
+    const modal = document.getElementById('deleteWidgetModal');
+    const btnClose = document.getElementById('btnCloseDeleteWidgetModal');
+    const btnCancel = document.getElementById('btnCancelDeleteWidgetModal');
+    const btnConfirm = document.getElementById('btnConfirmDeleteWidget');
+
+    function closeDeleteModal() {
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('modal-backdrop--open');
+        }
+        pendingDeleteWidgetId = null;
+    }
+
+    if (btnClose) btnClose.addEventListener('click', closeDeleteModal);
+    if (btnCancel) btnCancel.addEventListener('click', closeDeleteModal);
+
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeDeleteModal();
         });
-        await refreshGlobalView();
-    } catch (err) {
-        alert(`Failed to remove visual: ${err.message}`);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && modal.style.display !== 'none') {
+            closeDeleteModal();
+        }
+    });
+
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', async () => {
+            if (!pendingDeleteWidgetId) return;
+
+            const errBox = document.getElementById('deleteWidgetError');
+            if (errBox) {
+                errBox.textContent = '';
+                errBox.classList.add('form-summary--hidden');
+            }
+
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = 'Menghapus...';
+
+            try {
+                await apiFetch(`/widgets.php?id=${pendingDeleteWidgetId}`, {
+                    method: 'DELETE'
+                });
+                closeDeleteModal();
+                await loadGlobalView();
+            } catch (err) {
+                if (errBox) {
+                    errBox.textContent = `Gagal menghapus widget: ${err.message || 'Terjadi kesalahan'}`;
+                    errBox.classList.remove('form-summary--hidden');
+                }
+            } finally {
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = 'Hapus Widget';
+            }
+        });
     }
 }

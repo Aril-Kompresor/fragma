@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma | Otomasi</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261125f">
+    <link rel="stylesheet" href="/css/flow.css?v=20261125f">
+</head>
+<body data-auth-required="true" data-section="flow">
+    <div class="app-shell">
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav">
+                <a href="/projects" class="sidebar__link" id="navProjects">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </a>
+                <a href="/dashboard" class="sidebar__link" id="navEntity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    <span>Perangkat</span>
+                </a>
+                <a href="/view" class="sidebar__link" id="navView">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Visualisasi</span>
+                </a>
+                <a href="/flow" class="sidebar__link sidebar__link--active" id="navFlow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+                    <span>Otomasi</span>
+                </a>
+                <a href="/notifications" class="sidebar__link" id="navNotifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span>Notifikasi</span>
+                </a>
+                <a href="/storage" class="sidebar__link" id="navStorage">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                    <span>Storage</span>
+                </a>
+                <a href="/simulation" class="sidebar__link nav-superadmin-only" id="navSimulation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                    <span>Simulasi</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="app-main flow-page">
+            <div class="tb-top-bar">
+                <div class="tb-breadcrumbs">
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectsRoot">Projects</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectName">Project</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <span class="tb-breadcrumb-item tb-breadcrumb-item--active">Otomasi</span>
+                </div>
+            </div>
+
+            <div class="n8n-topbar">
+                <div class="n8n-topbar__left">
+                    <input type="text" id="flowNameInput" class="n8n-title-input" placeholder="Nama workflow..." aria-label="Nama workflow">
+                    <div id="flowTabsList" class="flow-tabs" role="tablist" aria-label="Daftar workflow"></div>
+                    <button type="button" class="btn btn--ghost btn--sm" id="btnNewFlow">+ Baru</button>
+                </div>
+                <div class="n8n-topbar__right">
+                    <label class="flow-toggle" title="Aktifkan workflow otomatis saat data masuk ke server">
+                        <input type="checkbox" id="flowEnabledToggle" checked>
+                        <span>Aktif</span>
+                    </label>
+                    <span id="flowSaveStatus" class="flow-save-status">Tersimpan</span>
+                    <button type="button" class="btn btn--ghost btn--sm" id="btnResetFlow" title="Kembalikan contoh workflow awal">Reset</button>
+                    <button type="button" class="btn btn--primary btn--sm" id="btnSaveFlow">Simpan</button>
+                    <button type="button" class="btn btn--ghost btn--sm flow-delete-btn" id="btnDeleteFlow" title="Hapus workflow aktif">Hapus</button>
+                </div>
+            </div>
+
+            <div class="n8n-stage" id="n8nStage">
+                <div class="n8n-world" id="n8nWorld">
+                    <svg class="n8n-edges-svg" id="n8nEdgesSvg" width="4000" height="4000" aria-hidden="true"></svg>
+                    <div class="n8n-nodes-layer" id="n8nNodesLayer"></div>
+                </div>
+
+                <button type="button" class="n8n-fab-add" id="btnOpenPalette" aria-label="Tambah node baru" title="Tambah Node">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+
+                <div class="n8n-palette-popover" id="n8nPalettePopover" style="display: none;">
+                    <div class="n8n-palette-popover__head">
+                        <span>Tambah Node</span>
+                        <button type="button" class="flow-icon-btn" id="btnClosePalette" aria-label="Tutup daftar node">&times;</button>
+                    </div>
+                    <div class="n8n-palette-popover__grid" id="n8nPaletteGrid"></div>
+                </div>
+
+                <div class="n8n-zoom-bar" role="group" aria-label="Kontrol kanvas">
+                    <button type="button" class="n8n-zoom-btn" id="btnFitView" title="Paskan tampilan" aria-label="Paskan tampilan">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
+                    </button>
+                    <button type="button" class="n8n-zoom-btn" id="btnZoomIn" title="Perbesar" aria-label="Perbesar kanvas">+</button>
+                    <button type="button" class="n8n-zoom-btn" id="btnZoomOut" title="Perkecil" aria-label="Perkecil kanvas">-</button>
+                    <button type="button" class="n8n-zoom-btn" id="btnResetView" title="Reset posisi" aria-label="Reset posisi kanvas">1:1</button>
+                </div>
+
+                <div class="n8n-hint-pill" id="n8nHintPill">Geser node ke posisi mana saja. Tarik titik kanan node ke titik kiri node lain untuk menghubungkan, klik node untuk mengatur config.</div>
+            </div>
+        </main>
+    </div>
+
+    <div class="n8n-drawer-backdrop" id="nodeConfigBackdrop" style="display: none;"></div>
+    <aside class="n8n-drawer" id="nodeConfigDrawer" aria-label="Konfigurasi Node" style="display: none;">
+        <div class="n8n-drawer__header">
+            <div>
+                <h2 class="n8n-drawer__title" id="drawerNodeTitle">Konfigurasi Node</h2>
+                <p class="n8n-drawer__desc" id="drawerNodeDesc"></p>
+            </div>
+            <button type="button" class="modal__close" id="btnCloseDrawer" aria-label="Tutup panel konfigurasi">&times;</button>
+        </div>
+        <div class="n8n-drawer__body" id="drawerNodeBody"></div>
+        <div class="n8n-drawer__footer" id="drawerNodeFooter">
+            <button type="button" class="btn btn--ghost btn--sm flow-delete-btn" id="btnDrawerDeleteNode">Hapus Node</button>
+            <button type="button" class="btn btn--primary btn--sm" id="btnDrawerDone">Selesai</button>
+        </div>
+    </aside>
+
+    <div class="modal-backdrop" id="deleteFlowModal" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteFlowModalTitle" style="max-width: 440px;">
+            <div class="modal__header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(231, 76, 111, 0.12); color: var(--danger); display: flex; align-items: center; justify-content: center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </div>
+                    <h2 class="modal__title" id="deleteFlowModalTitle" style="margin: 0; font-size: 1.15rem;">Hapus Workflow</h2>
+                </div>
+                <button type="button" class="modal__close" id="btnCloseDeleteFlowModal" aria-label="Tutup dialog">&times;</button>
+            </div>
+            <div class="modal__body" style="margin-top: 14px;">
+                <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.5; margin: 0;" id="deleteFlowConfirmText">
+                    Apakah Anda yakin ingin menghapus workflow ini?
+                </p>
+                <div id="deleteFlowError" class="form-summary form-summary--hidden" style="margin-top: 12px;"></div>
+            </div>
+            <div class="modal__footer" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn--ghost" id="btnCancelDeleteFlowModal">Batal</button>
+                <button type="button" class="btn btn--danger" id="btnConfirmDeleteFlow" style="background: var(--danger); color: #fff; font-weight: 600;">Hapus Workflow</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/utils.js?v=20261125d"></script>
+    <script src="/js/api.js?v=20261125d"></script>
+    <script src="/js/auth.js?v=20261125f"></script>
+    <script src="/js/flow.js?v=20261125f"></script>
+</body>
+</html>

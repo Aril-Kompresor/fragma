@@ -27,9 +27,11 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
 
     if (typeof onRemove === 'function') {
         const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
         removeBtn.className = 'widget-remove-btn';
+        removeBtn.setAttribute('aria-label', 'Hapus widget');
         removeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-        removeBtn.title = 'Remove Widget';
+        removeBtn.title = 'Hapus Widget';
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             destroyChartInstance(widgetId);
@@ -56,7 +58,10 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
 
     for (const pt of chronologicalData) {
         if (pt.payload && pt.payload[config.field] !== undefined && pt.payload[config.field] !== null) {
-            const timeLabel = new Date(pt.recorded_at.replace(' ', 'T')).toLocaleTimeString([], {
+            const utcStr = typeof normalizeUtcTimestamp === 'function'
+                ? normalizeUtcTimestamp(pt.recorded_at)
+                : pt.recorded_at.replace(' ', 'T') + 'Z';
+            const timeLabel = new Date(utcStr).toLocaleTimeString('id-ID', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
@@ -147,7 +152,10 @@ function renderLineChart(container, dataPoints, config, widgetId, onRemove) {
 
         for (const pt of chrono) {
             if (pt.payload && pt.payload[config.field] !== undefined && pt.payload[config.field] !== null) {
-                const timeLabel = new Date(pt.recorded_at.replace(' ', 'T')).toLocaleTimeString([], {
+                const utcStr = typeof normalizeUtcTimestamp === 'function'
+                    ? normalizeUtcTimestamp(pt.recorded_at)
+                    : pt.recorded_at.replace(' ', 'T') + 'Z';
+                const timeLabel = new Date(utcStr).toLocaleTimeString('id-ID', {
                     hour: '2-digit', minute: '2-digit', second: '2-digit'
                 });
                 newLabels.push(timeLabel);

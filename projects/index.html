@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma | Pilih Project</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261125b">
+</head>
+
+<body data-auth-required="true" data-page="projects">
+    <div class="app-shell">
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav">
+                <a href="/projects" class="sidebar__link sidebar__link--active" id="navProjects">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="tb-top-bar">
+                <div class="tb-breadcrumbs">
+                    <span class="tb-breadcrumb-item tb-breadcrumb-item--active">Projects</span>
+                </div>
+            </div>
+
+            <div class="container tb-container" style="padding-top: 24px; padding-bottom: 48px;">
+                <div id="needProjectBanner" class="project-need-banner" style="display: none;">
+                    <div class="project-need-banner__icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="project-need-banner__title">Pilih Project Terlebih Dahulu</div>
+                        <p class="project-need-banner__desc">Klik <strong>Buka Project</strong> pada salah satu project di bawah (atau buat project baru) untuk membuka ruang kerja project.</p>
+                    </div>
+                </div>
+
+                <div class="projects-header-card">
+                    <div>
+                        <h1 style="font-size: 1.35rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Pilih Project</h1>
+                        <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">Setiap project menyimpan perangkat, visualisasi, dan otomatisasi secara terpisah.</p>
+                    </div>
+                    <button type="button" class="btn btn--primary" id="btnCreateProjectModal">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Project Baru</span>
+                    </button>
+                </div>
+
+                <div class="grid grid--3" style="margin-bottom: 24px;">
+                    <div class="card" style="padding: 16px 20px;">
+                        <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;">Total Project</span>
+                        <div id="statTotalProjects" style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-top: 4px;">0</div>
+                    </div>
+                    <div class="card" style="padding: 16px 20px;">
+                        <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;">Perangkat Aktif</span>
+                        <div id="statActiveDevices" style="font-size: 1.6rem; font-weight: 700; color: var(--accent); margin-top: 4px;">0</div>
+                        <div id="statTotalDevicesSub" style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 2px;">dari 0 total perangkat</div>
+                    </div>
+                    <div class="card" style="padding: 16px 20px;">
+                        <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;">Cakupan Akun</span>
+                        <div id="statAccountScope" style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-top: 8px;">Memuat...</div>
+                    </div>
+                </div>
+
+                <div class="projects-toolbar">
+                    <div class="tb-search-wrap">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="projectSearchInput" class="tb-search-input" placeholder="Cari project..." autocomplete="off">
+                    </div>
+                    <div id="superadminFilterWrap" style="display: none; align-items: center; gap: 10px;">
+                        <label for="superadminScopeSelect" style="font-size: 0.85rem; color: var(--text-secondary);">Cakupan:</label>
+                        <select id="superadminScopeSelect" class="form-select">
+                            <option value="all">Semua Project Pengguna (Superadmin)</option>
+                            <option value="mine">Hanya Project Saya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="projects-grid" id="projectsContainer">
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--text-secondary);">Memuat daftar project...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-backdrop" id="createProjectModal" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
+            <div class="modal__header">
+                <h2 class="modal__title" id="createModalTitle">Buat Project Baru</h2>
+                <button type="button" class="modal__close" id="btnCloseModal" aria-label="Tutup dialog">&times;</button>
+            </div>
+            <form id="createProjectForm">
+                <div class="modal__body">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label" for="projectNameInput">Nama Project *</label>
+                        <input type="text" id="projectNameInput" class="form-input" placeholder="contoh: Monitoring Ruang Server" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="projectDescInput">Deskripsi (Opsional)</label>
+                        <textarea id="projectDescInput" class="form-textarea" rows="3" placeholder="Jelaskan lokasi atau tujuan project ini..."></textarea>
+                    </div>
+                    <div id="createProjectError" class="form-summary form-summary--hidden" style="margin-top: 12px;"></div>
+                </div>
+                <div class="modal__footer" style="margin-top: 24px;">
+                    <button type="button" class="btn btn--ghost" id="btnCancelModal">Batal</button>
+                    <button type="submit" class="btn btn--primary" id="btnSubmitProject">Buat Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="editProjectModal" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+            <div class="modal__header">
+                <h2 class="modal__title" id="editModalTitle">Ubah Project</h2>
+                <button type="button" class="modal__close" id="btnCloseEditModal" aria-label="Tutup dialog">&times;</button>
+            </div>
+            <form id="editProjectForm">
+                <input type="hidden" id="editProjectId">
+                <div class="modal__body">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label" for="editProjectNameInput">Nama Project *</label>
+                        <input type="text" id="editProjectNameInput" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editProjectDescInput">Deskripsi</label>
+                        <textarea id="editProjectDescInput" class="form-textarea" rows="3"></textarea>
+                    </div>
+                    <div id="editProjectError" class="form-summary form-summary--hidden" style="margin-top: 12px;"></div>
+                </div>
+                <div class="modal__footer" style="margin-top: 24px;">
+                    <button type="button" class="btn btn--ghost" id="btnCancelEditModal">Batal</button>
+                    <button type="submit" class="btn btn--primary" id="btnSubmitEditProject">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="deleteProjectModal" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteProjectModalTitle" style="max-width: 440px;">
+            <div class="modal__header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(231, 76, 111, 0.12); color: var(--danger); display: flex; align-items: center; justify-content: center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </div>
+                    <h2 class="modal__title" id="deleteProjectModalTitle" style="margin: 0; font-size: 1.15rem;">Hapus Project</h2>
+                </div>
+                <button type="button" class="modal__close" id="btnCloseDeleteProjectModal" aria-label="Tutup dialog">&times;</button>
+            </div>
+            <div class="modal__body" style="margin-top: 14px;">
+                <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.5; margin: 0;" id="deleteProjectConfirmText">
+                    Apakah Anda yakin ingin menghapus project ini?
+                </p>
+                <div id="deleteProjectError" class="form-summary form-summary--hidden" style="margin-top: 12px;"></div>
+            </div>
+            <div class="modal__footer" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn--ghost" id="btnCancelDeleteProjectModal">Batal</button>
+                <button type="button" class="btn btn--danger" id="btnConfirmDeleteProject" style="background: var(--danger); color: #fff; font-weight: 600;">Hapus Project</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/utils.js?v=20261125b"></script>
+    <script src="/js/api.js?v=20261125b"></script>
+    <script src="/js/auth.js?v=20261125b"></script>
+    <script src="/js/projects.js?v=20261125b"></script>
+</body>
+
+</html>

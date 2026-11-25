@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma | Visualisasi</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261125b">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body data-auth-required="true" data-section="view">
+    <div class="app-shell">
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav">
+                <a href="/projects" class="sidebar__link" id="navProjects">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </a>
+                <a href="/dashboard" class="sidebar__link" id="navEntity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>Perangkat</span>
+                </a>
+                <a href="/view" class="sidebar__link sidebar__link--active" id="navView">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>Visualisasi</span>
+                </a>
+                <a href="/flow" class="sidebar__link" id="navFlow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+                    <span>Otomasi</span>
+                </a>
+                <a href="/notifications" class="sidebar__link" id="navNotifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span>Notifikasi</span>
+                </a>
+                <a href="/storage" class="sidebar__link" id="navStorage">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                    <span>Storage</span>
+                </a>
+                <a href="/simulation" class="sidebar__link nav-superadmin-only" id="navSimulation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    </svg>
+                    <span>Simulasi</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="app-main" style="display: flex; flex-direction: column; min-height: 100vh;">
+            <div class="tb-top-bar">
+                <div class="tb-breadcrumbs">
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectsRoot">Projects</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectName">Project</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <span class="tb-breadcrumb-item tb-breadcrumb-item--active">Visualisasi</span>
+                </div>
+            </div>
+            <div class="view-header-bar">
+                <div>
+                    <h1 class="page-header__title" id="viewPageTitle" style="font-size: 1.25rem; margin-bottom: 2px;">Visualisasi</h1>
+                    <p class="page-header__subtitle" id="viewPageSubtitle" style="font-size: 0.85rem; margin-bottom: 0;">Pantau grafik dan pembacaan sensor secara langsung khusus untuk project ini.</p>
+                </div>
+                <div class="view-header-actions">
+                    <label class="tb-switch-label" title="Aktifkan pembaruan otomatis tiap 10 detik">
+                        <input type="checkbox" id="viewPollingToggle" checked>
+                        <span class="tb-switch-slider"></span>
+                        <span>Live polling</span>
+                    </label>
+                    <button type="button" id="refreshViewBtn" class="tb-icon-btn" aria-label="Perbarui widget" title="Perbarui widget sekarang">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    </button>
+                    <button type="button" id="fabAddWidget" class="btn btn--primary btn--sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Tambah Widget</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="builder-layout" style="flex: 1; min-height: 480px;">
+                <div class="builder-canvas grid-canvas" id="globalWidgetsGrid"
+                    style="position: relative; overflow: auto; width: 100%; height: 100%;">
+                    <div id="globalWidgetsLoading"
+                        style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        Memuat visualisasi...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="addWidgetModal" class="modal-overlay" style="display: none;">
+        <div class="widget-picker" role="dialog" aria-modal="true" aria-labelledby="pickerStep1Title">
+            <div id="pickerStep1" class="widget-picker__step">
+                <div class="widget-picker__toolbar">
+                    <h2 class="widget-picker__title" id="pickerStep1Title">Pilih Kategori Widget</h2>
+                    <button id="closeModalBtn" class="widget-picker__close" type="button" aria-label="Tutup dialog">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="widget-picker__grid" id="bundleGrid">
+                    <button type="button" class="bundle-card" data-bundle="charts">
+                        <div class="bundle-card__preview">
+                            <svg width="64" height="48" viewBox="0 0 64 48" fill="none">
+                                <polyline points="4,40 16,20 28,30 40,10 52,24 60,8" stroke="#4ecdc4" stroke-width="2.5"
+                                    fill="none" />
+                                <polyline points="4,44 16,32 28,38 40,22 52,34 60,18" stroke="#e74c6f" stroke-width="2"
+                                    fill="none" opacity="0.6" />
+                            </svg>
+                        </div>
+                        <div class="bundle-card__name">Grafik &amp; Meter</div>
+                        <div class="bundle-card__count">3 widget</div>
+                    </button>
+                    <button type="button" class="bundle-card" data-bundle="counters">
+                        <div class="bundle-card__preview">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: var(--accent); line-height: 1;">183
+                            </div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Nilai Terbaru</div>
+                        </div>
+                        <div class="bundle-card__name">Kartu Metrik</div>
+                        <div class="bundle-card__count">2 widget</div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="pickerStep2" class="widget-picker__step" style="display: none;">
+                <div class="widget-picker__toolbar">
+                    <button id="pickerBackBtn" class="widget-picker__back" type="button" aria-label="Kembali ke kategori">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <h2 class="widget-picker__title" id="pickerStep2Title">Grafik &amp; Meter</h2>
+                    <button id="closeModalBtn2" class="widget-picker__close" type="button" aria-label="Tutup dialog">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="widget-picker__grid" id="subWidgetGrid"></div>
+            </div>
+
+            <div id="pickerStep3" class="widget-picker__step" style="display: none;">
+                <div class="widget-picker__toolbar">
+                    <button id="pickerBackBtn2" class="widget-picker__back" type="button" aria-label="Kembali ke pilihan widget">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <h2 class="widget-picker__title" id="pickerStep3Title">Konfigurasi Widget</h2>
+                    <button id="closeModalBtn3" class="widget-picker__close" type="button" aria-label="Tutup dialog">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="widget-picker__config">
+                    <form id="addVisualForm" style="display: flex; flex-direction: column; gap: 20px;">
+                        <input type="hidden" id="visualTypeSelect" value="line-chart">
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="visualEntitySelect">Pilih Perangkat</label>
+                            <select id="visualEntitySelect" class="form-select" required>
+                                <option value="">-- Pilih Perangkat --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="visualFieldSelect">Field Data</label>
+                            <select id="visualFieldSelect" class="form-select" required>
+                                <option value="">Pilih perangkat terlebih dahulu...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="visualLabelInput">Label Kustom (Opsional)</label>
+                            <input type="text" id="visualLabelInput" class="form-input"
+                                placeholder="contoh: Suhu Ruang Utama">
+                        </div>
+
+                        <div class="form-group" id="gaugeConfigGroup" style="display: none; margin-bottom: 0;">
+                            <div class="form-label-row">
+                                <label class="form-label" for="visualMinInput">Batas Nilai Gauge</label>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <input type="number" id="visualMinInput" class="form-input" placeholder="Min (0)" aria-label="Nilai minimum gauge">
+                                <input type="number" id="visualMaxInput" class="form-input" placeholder="Max (100)" aria-label="Nilai maksimum gauge">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Tema Warna</label>
+                            <div class="color-picker">
+                                <button type="button" class="color-swatch active" style="background: #4ecdc4"
+                                    data-color="#4ecdc4" aria-label="Warna Teal"></button>
+                                <button type="button" class="color-swatch" style="background: #e74c6f"
+                                    data-color="#e74c6f" aria-label="Warna Merah"></button>
+                                <button type="button" class="color-swatch" style="background: #2ecc71"
+                                    data-color="#2ecc71" aria-label="Warna Hijau"></button>
+                                <button type="button" class="color-swatch" style="background: #f39c12"
+                                    data-color="#f39c12" aria-label="Warna Oranye"></button>
+                                <button type="button" class="color-swatch" style="background: #9b59b6"
+                                    data-color="#9b59b6" aria-label="Warna Ungu"></button>
+                            </div>
+                            <input type="hidden" id="visualColorInput" value="#4ecdc4">
+                        </div>
+
+                        <div id="addVisualError" class="form-summary form-summary--hidden" style="margin-top: 4px;"></div>
+
+                        <div style="margin-top: 8px; display: flex; justify-content: flex-end; gap: 12px;">
+                            <button type="button" class="btn btn--ghost" id="cancelModalBtn">Batal</button>
+                            <button type="submit" class="btn btn--primary" id="submitAddVisualBtn">Tambahkan ke Dashboard</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="deleteWidgetModal" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteWidgetModalTitle" style="max-width: 440px;">
+            <div class="modal__header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(231, 76, 111, 0.12); color: var(--danger); display: flex; align-items: center; justify-content: center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </div>
+                    <h2 class="modal__title" id="deleteWidgetModalTitle" style="margin: 0; font-size: 1.15rem;">Hapus Widget</h2>
+                </div>
+                <button type="button" class="modal__close" id="btnCloseDeleteWidgetModal" aria-label="Tutup dialog">&times;</button>
+            </div>
+            <div class="modal__body" style="margin-top: 14px;">
+                <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.5; margin: 0;">
+                    Apakah Anda yakin ingin menghapus widget ini dari dashboard?
+                </p>
+                <div id="deleteWidgetError" class="form-summary form-summary--hidden" style="margin-top: 12px;"></div>
+            </div>
+            <div class="modal__footer" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn--ghost" id="btnCancelDeleteWidgetModal">Batal</button>
+                <button type="button" class="btn btn--danger" id="btnConfirmDeleteWidget" style="background: var(--danger); color: #fff; font-weight: 600;">Hapus Widget</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/utils.js?v=20261125b"></script>
+    <script src="/js/api.js?v=20261125b"></script>
+    <script src="/js/auth.js?v=20261125b"></script>
+    <script src="/js/dnd.js?v=20261125b"></script>
+    <script src="/js/widgets/line-chart.js?v=20261125b"></script>
+    <script src="/js/widgets/value-card.js?v=20261125b"></script>
+    <script src="/js/widgets/gauge.js?v=20261125b"></script>
+    <script src="/js/view.js?v=20261125b"></script>
+</body>
+
+</html>

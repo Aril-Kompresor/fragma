@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragma | Simulasi</title>
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=20261125b">
+</head>
+
+<body data-auth-required="true" data-auth-admin-only="true" data-section="simulation">
+    <div class="app-shell">
+        <header class="mobile-header">
+            <a href="/" class="sidebar__brand" style="padding: 0;">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+        </header>
+
+        <aside class="sidebar">
+            <a href="/" class="sidebar__brand">
+                <img src="/img/logo.svg" alt="Fragma Logo" class="brand-logo">
+                <span>Fragma</span>
+            </a>
+            <nav class="sidebar__nav">
+                <a href="/projects" class="sidebar__link" id="navProjects">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </a>
+                <a href="/dashboard" class="sidebar__link" id="navEntity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>Perangkat</span>
+                </a>
+                <a href="/view" class="sidebar__link" id="navView">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>Visualisasi</span>
+                </a>
+                <a href="/flow" class="sidebar__link" id="navFlow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+                    <span>Otomasi</span>
+                </a>
+                <a href="/notifications" class="sidebar__link" id="navNotifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span>Notifikasi</span>
+                </a>
+                <a href="/storage" class="sidebar__link" id="navStorage">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                    <span>Storage</span>
+                </a>
+                <a href="/simulation" class="sidebar__link sidebar__link--active nav-superadmin-only" id="navSimulation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    </svg>
+                    <span>Simulasi</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="tb-top-bar">
+                <div class="tb-breadcrumbs">
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectsRoot">Projects</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <a href="/projects" class="tb-breadcrumb-item" id="breadcrumbProjectName">Project</a>
+                    <span class="tb-breadcrumb-separator">&gt;</span>
+                    <span class="tb-breadcrumb-item tb-breadcrumb-item--active">Simulasi</span>
+                </div>
+            </div>
+
+            <div class="container tb-container" style="padding-top: 24px;">
+                <div class="page-header" style="margin-bottom: 24px;">
+                    <div>
+                        <h1 class="page-header__title" style="margin-bottom: 4px;">Simulasi Perangkat</h1>
+                        <p id="simPageSubtitle" class="page-header__subtitle" style="margin: 0;">Kirim data telemetri acak secara berkala untuk menguji grafik dan otomasi di project ini.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid--2">
+                    <div class="card" id="simControlsCard">
+                        <div style="margin-bottom: 24px;">
+                            <h2 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 6px;">Kontrol Simulator</h2>
+                            <p id="simProjectSubtitle" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Kirim data simulasi sensor secara otomatis hanya ke perangkat di project yang sedang dibuka.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="simInterval">Interval Pengiriman (Detik)</label>
+                            <input type="number" id="simInterval" class="form-input" value="3" min="1" max="60">
+                        </div>
+
+                        <div style="margin-top: 28px; display: flex; gap: 12px;">
+                            <button type="button" id="btnStart" class="btn btn--primary" style="flex: 1;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                Mulai Simulasi
+                            </button>
+                            <button type="button" id="btnStop" class="btn btn--danger" style="flex: 1; display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="6" y="6" width="12" height="12"></rect>
+                                </svg>
+                                Hentikan Simulasi
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card" style="display: flex; flex-direction: column;">
+                        <h2 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 12px;">Log Aktivitas</h2>
+
+                        <div id="simLog" class="tb-code-box sim-log-box"
+                            style="flex: 1; min-height: 220px; max-height: 320px; overflow-y: auto; background: #050508; color: #a1a1b5; font-size: 0.78rem; font-family: var(--font-mono);">
+                            <div>[SISTEM] Simulator siap. Menunggu perintah mulai...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/utils.js?v=20261125b"></script>
+    <script src="/js/api.js?v=20261125b"></script>
+    <script src="/js/auth.js?v=20261125b"></script>
+    <script src="/js/simulation.js?v=20261125b"></script>
+</body>
+
+</html>

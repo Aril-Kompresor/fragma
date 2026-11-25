@@ -10,10 +10,22 @@ handle_cors_preflight();
 
 function handle_get(PDO $pdo): void
 {
+    $user = require_auth();
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+    $hasProjectFilter = !empty($_GET['project_uuid']) || !empty($_GET['uuid']) || !empty($_GET['project_id']);
+    $projectId = $hasProjectFilter ? (resolve_requested_project_id($pdo, $_GET) ?? 0) : 0;
+    $isSuper = is_superadmin($user);
 
     if ($id > 0) {
-        $stmt = $pdo->prepare('SELECT id, name, api_key, fields, created_at, updated_at FROM entities WHERE id = :id LIMIT 1');
+        $stmt = $pdo->prepare('
+            SELECT e.id, e.user_id, e.project_id, p.uuid AS project_uuid, p.name AS project_name, u.username AS owner_username,
+                   e.name, e.notes, e.api_key, e.fields, e.created_at, e.updated_at
+            FROM entities e
+            LEFT JOIN users u ON u.id = e.user_id
+            LEFT JOIN projects p ON p.id = e.project_id
+            WHERE e.id = :id
+            LIMIT 1
+        ');
         $stmt->execute([':id' => $id]);
         $entity = $stmt->fetch();
 
@@ -21,10 +33,22 @@ function handle_get(PDO $pdo): void
             json_response(404, ['success' => false, 'error' => 'Entity not found']);
         }
 
+        if ($projectId > 0 && (int) $entity['project_id'] !== $projectId) {
+            json_response(404, ['success' => false, 'error' => 'Entity not found in this project']);
+        }
+
+        if (!can_manage_entity($pdo, $id, $user)) {
+            json_response(403, ['success' => false, 'error' => 'Forbidden: you do not have permission to view this device']);
+        }
+
+        $entity['id'] = (int) $entity['id'];
+        $entity['user_id'] = $entity['user_id'] !== null ? (int) $entity['user_id'] : null;
+        $entity['project_id'] = $entity['project_id'] !== null ? (int) $entity['project_id'] : null;
+        $entity['project_uuid'] = $entity['project_uuid'] !== null ? (string) $entity['project_uuid'] : null;
         $fields = json_decode((string) $entity['fields'], true);
         $entity['fields'] = is_array($fields) ? $fields : [];
+        $entity['api_key'] = (string) $entity['api_key'];
         $entity['api_key_masked'] = mask_api_key((string) $entity['api_key']);
-        unset($entity['api_key']);
 
         $countStmt = $pdo->prepare('SELECT COUNT(*) as total, MAX(recorded_at) as last_point FROM data_points WHERE entity_id = :entity_id');
         $countStmt->execute([':entity_id' => $id]);
@@ -42,8 +66,28 @@ function handle_get(PDO $pdo): void
         json_response(200, ['success' => true, 'data' => $entity]);
     }
 
-    $stmt = $pdo->query('
-        SELECT e.id, e.name, e.api_key, e.fields, e.created_at, e.updated_at,
+    $whereClauses = [];
+    $params = [];
+
+    if ($projectId > 0) {
+        if (!can_manage_project($pdo, $projectId, $user)) {
+            json_response(403, ['success' => false, 'error' => 'Forbidden: you do not have access to this project']);
+        }
+        $whereClauses[] = 'e.project_id = :project_id';
+        $params[':project_id'] = $projectId;
+    }
+
+    if (!$isSuper) {
+        $whereClauses[] = '(e.user_id = :uid OR e.project_id IN (SELECT id FROM projects WHERE user_id = :uid_p))';
+        $params[':uid'] = $user['id'];
+        $params[':uid_p'] = $user['id'];
+    }
+
+    $whereSql = !empty($whereClauses) ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
+
+    $sql = "
+        SELECT e.id, e.user_id, e.project_id, p.uuid AS project_uuid, p.name AS project_name, u.username AS owner_username,
+               e.name, e.notes, e.api_key, e.fields, e.created_at, e.updated_at,
                COUNT(d.id) AS data_count,
                MAX(d.recorded_at) AS last_data_at,
                (
@@ -54,15 +98,24 @@ function handle_get(PDO $pdo): void
                    LIMIT 1
                ) AS latest_payload
         FROM entities e
+        LEFT JOIN users u ON u.id = e.user_id
+        LEFT JOIN projects p ON p.id = e.project_id
         LEFT JOIN data_points d ON d.entity_id = e.id
+        {$whereSql}
         GROUP BY e.id
         ORDER BY e.id DESC
-    ');
+    ";
 
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $entities = $stmt->fetchAll();
     $result = [];
 
     foreach ($entities as $row) {
+        $row['id'] = (int) $row['id'];
+        $row['user_id'] = $row['user_id'] !== null ? (int) $row['user_id'] : null;
+        $row['project_id'] = $row['project_id'] !== null ? (int) $row['project_id'] : null;
+        $row['project_uuid'] = $row['project_uuid'] !== null ? (string) $row['project_uuid'] : null;
         $fields = json_decode((string) $row['fields'], true);
         $row['fields'] = is_array($fields) ? $fields : [];
         $row['api_key_masked'] = mask_api_key((string) $row['api_key']);
@@ -78,6 +131,7 @@ function handle_get(PDO $pdo): void
 
 function handle_post(PDO $pdo): void
 {
+    $user = require_auth();
     $body = get_json_input();
 
     $name = isset($body['name']) ? trim((string) $body['name']) : '';
@@ -106,14 +160,41 @@ function handle_post(PDO $pdo): void
         ];
     }
 
+    $projectId = resolve_requested_project_id($pdo, $_GET, $body);
+    if ($projectId !== null && !can_manage_project($pdo, $projectId, $user)) {
+        json_response(403, ['success' => false, 'error' => 'Forbidden: you cannot add devices to this project']);
+    }
+
+    $projectUuid = null;
+    if ($projectId === null) {
+        $defaultPStmt = $pdo->prepare('SELECT id, uuid FROM projects WHERE user_id = :uid ORDER BY id ASC LIMIT 1');
+        $defaultPStmt->execute([':uid' => $user['id']]);
+        $defRow = $defaultPStmt->fetch();
+        if ($defRow) {
+            $projectId = (int) $defRow['id'];
+            $projectUuid = (string) $defRow['uuid'];
+        }
+    } else {
+        $uuidStmt = $pdo->prepare('SELECT uuid FROM projects WHERE id = :id LIMIT 1');
+        $uuidStmt->execute([':id' => $projectId]);
+        $uuidVal = $uuidStmt->fetchColumn();
+        $projectUuid = $uuidVal ? (string) $uuidVal : null;
+    }
+
+    $rawNotes = isset($body['notes']) ? trim((string) $body['notes']) : '';
+    $notes = $rawNotes !== '' ? mb_substr($rawNotes, 0, 150) : null;
+
     $apiKey = generate_api_key();
     $jsonFields = json_encode($cleanFields, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-    $stmt = $pdo->prepare('INSERT INTO entities (name, api_key, fields) VALUES (:name, :api_key, :fields)');
+    $stmt = $pdo->prepare('INSERT INTO entities (user_id, project_id, name, notes, api_key, fields) VALUES (:user_id, :project_id, :name, :notes, :api_key, :fields)');
     $stmt->execute([
-        ':name'    => $name,
-        ':api_key' => $apiKey,
-        ':fields'  => $jsonFields,
+        ':user_id'    => (int) $user['id'],
+        ':project_id' => $projectId,
+        ':name'       => $name,
+        ':notes'      => $notes,
+        ':api_key'    => $apiKey,
+        ':fields'     => $jsonFields,
     ]);
 
     $newId = (int) $pdo->lastInsertId();
@@ -122,7 +203,12 @@ function handle_post(PDO $pdo): void
         'success' => true,
         'data'    => [
             'id'             => $newId,
+            'user_id'        => (int) $user['id'],
+            'project_id'     => $projectId,
+            'project_uuid'   => $projectUuid,
+            'owner_username' => $user['username'],
             'name'           => $name,
+            'notes'          => $notes,
             'api_key'        => $apiKey,
             'api_key_masked' => mask_api_key($apiKey),
             'fields'         => $cleanFields,
@@ -138,7 +224,7 @@ function handle_put(PDO $pdo): void
         json_response(400, ['success' => false, 'error' => 'Missing or invalid entity ID']);
     }
 
-    require_api_key($pdo, $id);
+    require_entity_access($pdo, $id);
 
     $body = get_json_input();
     $updates = [];
@@ -176,6 +262,32 @@ function handle_put(PDO $pdo): void
         $params[':fields'] = json_encode($cleanFields, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
+    if (array_key_exists('project_uuid', $body) || array_key_exists('project_id', $body)) {
+        $user = require_auth();
+        $targetPid = null;
+        if (!empty($body['project_uuid']) || (!empty($body['project_id']) && (int) $body['project_id'] > 0)) {
+            $targetPid = resolve_requested_project_id($pdo, [], $body);
+        }
+        if ($targetPid !== null && !can_manage_project($pdo, $targetPid, $user)) {
+            json_response(403, ['success' => false, 'error' => 'Forbidden: you cannot move device to this project']);
+        }
+        $updates[] = 'project_id = :project_id';
+        $params[':project_id'] = $targetPid;
+    }
+
+    if (array_key_exists('notes', $body)) {
+        $trimmedNotes = $body['notes'] !== null ? trim((string) $body['notes']) : '';
+        $updates[] = 'notes = :notes';
+        $params[':notes'] = $trimmedNotes !== '' ? mb_substr($trimmedNotes, 0, 150) : null;
+    }
+
+    $newApiKey = null;
+    if (!empty($body['regenerate_key'])) {
+        $newApiKey = generate_api_key();
+        $updates[] = 'api_key = :api_key';
+        $params[':api_key'] = $newApiKey;
+    }
+
     if (empty($updates)) {
         json_response(400, ['success' => false, 'error' => 'No valid fields provided for update']);
     }
@@ -184,10 +296,18 @@ function handle_put(PDO $pdo): void
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 
-    json_response(200, [
+    $responseData = [
         'success' => true,
         'message' => 'Entity updated successfully'
-    ]);
+    ];
+    if ($newApiKey !== null) {
+        $responseData['data'] = [
+            'api_key'        => $newApiKey,
+            'api_key_masked' => mask_api_key($newApiKey),
+        ];
+    }
+
+    json_response(200, $responseData);
 }
 
 function handle_delete(PDO $pdo): void
@@ -197,7 +317,7 @@ function handle_delete(PDO $pdo): void
         json_response(400, ['success' => false, 'error' => 'Missing or invalid entity ID']);
     }
 
-    require_api_key($pdo, $id);
+    require_entity_access($pdo, $id);
 
     $stmt = $pdo->prepare('DELETE FROM entities WHERE id = :id');
     $stmt->execute([':id' => $id]);

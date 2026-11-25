@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 560" width="1020" height="560">
+  <defs>
+    <style>
+      .bg { fill: #0a0a0f; }
+      .box { fill: #12121a; stroke: #1e1e2e; stroke-width: 1.5; rx: 8px; }
+      .header-bg { fill: #1a1a26; }
+      .header-title { fill: #4ecdc4; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14px; font-weight: 700; }
+      .col-header { fill: #8888a0; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+      .text-main { fill: #e0e0e8; font-family: 'Inter', sans-serif; font-size: 12px; }
+      .text-field { fill: #ffffff; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; font-weight: 500; }
+      .text-type { fill: #8888a0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 11px; }
+      .badge-pk { fill: #f39c12; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 10px; font-weight: 700; }
+      .badge-fk { fill: #4ecdc4; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 10px; font-weight: 700; }
+      .badge-uq { fill: #9b59b6; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 10px; font-weight: 700; }
+      .line { stroke: #4ecdc4; stroke-width: 2; fill: none; }
+      .line-label { fill: #4ecdc4; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; font-weight: 700; }
+      .row-divider { stroke: #1e1e2e; stroke-width: 1; stroke-dasharray: 2 2; }
+    </style>
+    
+    <marker id="crowFoot" viewBox="0 0 16 16" refX="16" refY="8" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <line x1="0" y1="8" x2="16" y2="8" stroke="#4ecdc4" stroke-width="2" />
+      <line x1="16" y1="2" x2="6" y2="8" stroke="#4ecdc4" stroke-width="2" />
+      <line x1="16" y1="14" x2="6" y2="8" stroke="#4ecdc4" stroke-width="2" />
+      <line x1="6" y1="2" x2="6" y2="14" stroke="#4ecdc4" stroke-width="2" />
+    </marker>
+    
+    <marker id="oneBar" viewBox="0 0 16 16" refX="0" refY="8" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <line x1="4" y1="2" x2="4" y2="14" stroke="#4ecdc4" stroke-width="2" />
+      <line x1="8" y1="2" x2="8" y2="14" stroke="#4ecdc4" stroke-width="2" />
+    </marker>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="100%" height="100%" class="bg" />
+
+  <!-- Title / Legend -->
+  <text x="40" y="45" fill="#e0e0e8" font-family="'Inter', sans-serif" font-size="18" font-weight="700">Fragma IoT — Entity Relationship Diagram</text>
+  <text x="40" y="68" fill="#8888a0" font-family="'Inter', sans-serif" font-size="12">Database: MySQL (InnoDB, UTF-8mb4) &bull; 1-to-Many Relational Schema</text>
+
+  <!-- RELATIONSHIP LINES -->
+  <!-- entities -> data_points -->
+  <path d="M 400 165 C 490 165, 490 145, 580 145" class="line" marker-start="url(#oneBar)" marker-end="url(#crowFoot)" />
+  <text x="415" y="155" class="line-label">1</text>
+  <text x="560" y="135" class="line-label">N</text>
+
+  <!-- entities -> widgets -->
+  <path d="M 400 240 C 490 240, 490 380, 580 380" class="line" marker-start="url(#oneBar)" marker-end="url(#crowFoot)" />
+  <text x="415" y="230" class="line-label">1</text>
+  <text x="560" y="370" class="line-label">N</text>
+
+  <!-- TABLE: entities -->
+  <g transform="translate(40, 95)">
+    <rect width="360" height="270" class="box" />
+    <path d="M 0 0 L 360 0 L 360 38 L 0 38 Z" class="header-bg" rx="8" />
+    <text x="16" y="24" class="header-title">entities</text>
+
+    <!-- Table header -->
+    <text x="16" y="58" class="col-header">KEY</text>
+    <text x="60" y="58" class="col-header">FIELD</text>
+    <text x="180" y="58" class="col-header">TYPE</text>
+    <text x="315" y="58" class="col-header">NULL</text>
+    <line x1="0" y1="68" x2="360" y2="68" stroke="#1e1e2e" stroke-width="1.5" />
+
+    <!-- Rows -->
+    <!-- id -->
+    <text x="16" y="92" class="badge-pk">PK</text>
+    <text x="60" y="92" class="text-field">id</text>
+    <text x="180" y="92" class="text-type">INT AUTO_INC</text>
+    <text x="315" y="92" class="text-main">NO</text>
+    <line x1="16" y1="104" x2="344" y2="104" class="row-divider" />
+
+    <!-- name -->
+    <text x="60" y="124" class="text-field">name</text>
+    <text x="180" y="124" class="text-type">VARCHAR(255)</text>
+    <text x="315" y="124" class="text-main">NO</text>
+    <line x1="16" y1="136" x2="344" y2="136" class="row-divider" />
+
+    <!-- api_key -->
+    <text x="16" y="156" class="badge-uq">UQ</text>
+    <text x="60" y="156" class="text-field">api_key</text>
+    <text x="180" y="156" class="text-type">VARCHAR(64)</text>
+    <text x="315" y="156" class="text-main">NO</text>
+    <line x1="16" y1="168" x2="344" y2="168" class="row-divider" />
+
+    <!-- fields -->
+    <text x="60" y="188" class="text-field">fields</text>
+    <text x="180" y="188" class="text-type">JSON</text>
+    <text x="315" y="188" class="text-main">NO</text>
+    <line x1="16" y1="200" x2="344" y2="200" class="row-divider" />
+
+    <!-- created_at -->
+    <text x="60" y="220" class="text-field">created_at</text>
+    <text x="180" y="220" class="text-type">TIMESTAMP</text>
+    <text x="315" y="220" class="text-main">NO</text>
+    <line x1="16" y1="232" x2="344" y2="232" class="row-divider" />
+
+    <!-- updated_at -->
+    <text x="60" y="252" class="text-field">updated_at</text>
+    <text x="180" y="252" class="text-type">TIMESTAMP</text>
+    <text x="315" y="252" class="text-main">NO</text>
+  </g>
+
+  <!-- TABLE: data_points -->
+  <g transform="translate(580, 45)">
+    <rect width="400" height="210" class="box" />
+    <path d="M 0 0 L 400 0 L 400 38 L 0 38 Z" class="header-bg" rx="8" />
+    <text x="16" y="24" class="header-title">data_points</text>
+
+    <!-- Table header -->
+    <text x="16" y="58" class="col-header">KEY</text>
+    <text x="60" y="58" class="col-header">FIELD</text>
+    <text x="195" y="58" class="col-header">TYPE</text>
+    <text x="350" y="58" class="col-header">NULL</text>
+    <line x1="0" y1="68" x2="400" y2="68" stroke="#1e1e2e" stroke-width="1.5" />
+
+    <!-- Rows -->
+    <!-- id -->
+    <text x="16" y="92" class="badge-pk">PK</text>
+    <text x="60" y="92" class="text-field">id</text>
+    <text x="195" y="92" class="text-type">BIGINT AUTO_INC</text>
+    <text x="350" y="92" class="text-main">NO</text>
+    <line x1="16" y1="104" x2="384" y2="104" class="row-divider" />
+
+    <!-- entity_id -->
+    <text x="16" y="124" class="badge-fk">FK</text>
+    <text x="60" y="124" class="text-field">entity_id</text>
+    <text x="195" y="124" class="text-type">INT (CASCADE)</text>
+    <text x="350" y="124" class="text-main">NO</text>
+    <line x1="16" y1="136" x2="384" y2="136" class="row-divider" />
+
+    <!-- payload -->
+    <text x="60" y="156" class="text-field">payload</text>
+    <text x="195" y="156" class="text-type">JSON</text>
+    <text x="350" y="156" class="text-main">NO</text>
+    <line x1="16" y1="168" x2="384" y2="168" class="row-divider" />
+
+    <!-- recorded_at -->
+    <text x="60" y="188" class="text-field">recorded_at</text>
+    <text x="195" y="188" class="text-type">TIMESTAMP (INDEX)</text>
+    <text x="350" y="188" class="text-main">NO</text>
+  </g>
+
+  <!-- TABLE: widgets -->
+  <g transform="translate(580, 280)">
+    <rect width="400" height="260" class="box" />
+    <path d="M 0 0 L 400 0 L 400 38 L 0 38 Z" class="header-bg" rx="8" />
+    <text x="16" y="24" class="header-title">widgets</text>
+
+    <!-- Table header -->
+    <text x="16" y="58" class="col-header">KEY</text>
+    <text x="60" y="58" class="col-header">FIELD</text>
+    <text x="195" y="58" class="col-header">TYPE</text>
+    <text x="350" y="58" class="col-header">NULL</text>
+    <line x1="0" y1="68" x2="400" y2="68" stroke="#1e1e2e" stroke-width="1.5" />
+
+    <!-- Rows -->
+    <!-- id -->
+    <text x="16" y="92" class="badge-pk">PK</text>
+    <text x="60" y="92" class="text-field">id</text>
+    <text x="195" y="92" class="text-type">INT AUTO_INC</text>
+    <text x="350" y="92" class="text-main">NO</text>
+    <line x1="16" y1="104" x2="384" y2="104" class="row-divider" />
+
+    <!-- entity_id -->
+    <text x="16" y="124" class="badge-fk">FK</text>
+    <text x="60" y="124" class="text-field">entity_id</text>
+    <text x="195" y="124" class="text-type">INT (CASCADE)</text>
+    <text x="350" y="124" class="text-main">NO</text>
+    <line x1="16" y1="136" x2="384" y2="136" class="row-divider" />
+
+    <!-- type -->
+    <text x="60" y="156" class="text-field">type</text>
+    <text x="195" y="156" class="text-type">ENUM('chart', 'card')</text>
+    <text x="350" y="156" class="text-main">NO</text>
+    <line x1="16" y1="168" x2="384" y2="168" class="row-divider" />
+
+    <!-- config -->
+    <text x="60" y="188" class="text-field">config</text>
+    <text x="195" y="188" class="text-type">JSON</text>
+    <text x="350" y="188" class="text-main">NO</text>
+    <line x1="16" y1="200" x2="384" y2="200" class="row-divider" />
+
+    <!-- position -->
+    <text x="60" y="220" class="text-field">position</text>
+    <text x="195" y="220" class="text-type">INT</text>
+    <text x="350" y="220" class="text-main">YES</text>
+    <line x1="16" y1="232" x2="384" y2="232" class="row-divider" />
+
+    <!-- created_at -->
+    <text x="60" y="244" class="text-field">created_at</text>
+    <text x="195" y="244" class="text-type">TIMESTAMP</text>
+    <text x="350" y="244" class="text-main">NO</text>
+  </g>
+</svg>

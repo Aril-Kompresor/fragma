@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: fragma-db
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-fragma}
+      MYSQL_USER: ${DB_USER:-fragma}
+      MYSQL_PASSWORD: ${DB_PASS:-fragma_db_pass_change_me}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-fragma_root_pass_change_me}
+    volumes:
+      - fragma_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-fragma_root_pass_change_me}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - fragma_net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fragma-web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8088}:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-fragma}
+      DB_USER: ${DB_USER:-fragma}
+      DB_PASS: ${DB_PASS:-fragma_db_pass_change_me}
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-https://fragma.my.id}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://fragma.my.id,http://fragma.my.id,http://fragma.test}
+    networks:
+      - fragma_net
+
+volumes:
+  fragma_db_data:
+
+networks:
+  fragma_net:
+    driver: bridge

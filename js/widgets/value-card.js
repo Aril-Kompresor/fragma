@@ -66,9 +66,11 @@ function renderValueCard(container, dataPoints, config, widgetId, onRemove) {
 
     if (typeof onRemove === 'function') {
         const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
         removeBtn.className = 'widget-remove-btn';
+        removeBtn.setAttribute('aria-label', 'Hapus widget');
         removeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-        removeBtn.title = 'Remove Widget';
+        removeBtn.title = 'Hapus Widget';
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             onRemove(widgetId);

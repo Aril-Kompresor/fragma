@@ -1,9 +1,43 @@
+Options -Indexes -MultiViews
+DirectorySlash Off
+
 <IfModule mod_headers.c>
     <FilesMatch "\.(html|htm|js|css)$">
         Header set Cache-Control "no-cache, no-store, must-revalidate"
         Header set Pragma "no-cache"
         Header set Expires 0
     </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    RewriteRule ^api/ - [L]
+    RewriteRule ^(css|js|img)/ - [L]
+
+    RewriteRule ^login/?$ login.html [L,QSA]
+    RewriteRule ^register/?$ register.html [L,QSA]
+    RewriteRule ^erd/?$ erd.html [L,QSA]
+
+    RewriteRule ^projects/?$ projects/index.html [L,QSA]
+    RewriteRule ^projects/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/?$ /project/$1/dashboard [R=302,L]
+    RewriteRule ^projects/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(.+)$ /project/$1/$2 [R=302,L]
+
+    RewriteRule ^project/?$ /projects [R=302,L]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/?$ /project/$1/dashboard [R=302,L]
+
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(dashboard|devices)/?$ projects/dashboard/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/create/?$ projects/create/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/entity/([0-9]+)/?$ projects/entity/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/entity/?$ projects/entity/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/view/?$ projects/view/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/flow/?$ projects/flow/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/notifications/?$ projects/notifications/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/storage/?$ projects/storage/index.html [L,QSA]
+    RewriteRule ^project/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/simulation/?$ projects/simulation/index.html [L,QSA]
+
+    RewriteRule ^(dashboard|create|entity|view|flow|notifications|storage|simulation)(?:/index\.html|/)?$ projects/$1/index.html [L,QSA]
 </IfModule>
 
 ErrorDocument 404 /404.html
